@@ -1,0 +1,23 @@
+include ./mixins.jade
+
+.side-tool
+  .side-tool-container
+    .top-tools
+      .previewer-size
+        input(type='text', 
+              data-bind='value:widgetPreviewer.width')
+        span.sign x
+        input(type='text', 
+              data-bind='value:widgetPreviewer.height')
+      .btn-list
+        a(href='#', 
+          onclick='window["previewer-iframe"].getAttribute("src") && (window["previewer-iframe"].src = window["previewer-iframe"].src)')
+          span.glyphicon.glyphicon-refresh
+    .previewer
+      +ko('if : widgetPreviewer.src')
+        iframe.frame#previewer-iframe(scroll-on-drag='', frameborder='0')
+
+      +ko('if : !widgetPreviewer.src()')
+        div.frame
+    .bottom-tools.btn-list
+      a.btn 底部按钮

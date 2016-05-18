@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    title Document
+
+    link(rel="stylesheet", type="text/css", href="//cdn.staticfile.org/twitter-bootstrap/3.3.1/css/bootstrap.min.css")
+    link(rel='stylesheet', href='/stylesheets/main.css')
+    link(rel='stylesheet', href='/stylesheets/jstree.css')
+
+  body
+    .main-wrapper.container-fluid
+      .row
+        .col-sm-3.col-parts-wrapper
+          .col-parts
+            include ./inc/file_tree.jade
+        .col-sm-6.col-parts-wrapper
+          .col-parts
+            include ./inc/main_iframe.jade
+        .col-sm-3.col-parts-wrapper
+          .col-parts
+            include ./inc/attribute.jade
+  
+    script(src="/javascripts/livereload.js")
+    script(type="text/javascript", src="//cdn.staticfile.org/d3/3.4.13/d3.js")
+    script(type="text/javascript", src="//cdn.staticfile.org/require.js/2.1.15/require.js")
+    script.
+      require.config({
+        baseUrl: './javascripts',
+        paths :{
+          'knockout' : '//cdn.staticfile.org/knockout/3.2.0/knockout-min',
+          'ko' : '//cdn.staticfile.org/knockout/3.2.0/knockout-min',
+          'json' : './libs/require-json',
+          'underscore' : '//cdn.staticfile.org/underscore.js/1.7.0/underscore'
+        }
+      });
+    script(type="text/javascript", src="//cdn.staticfile.org/jquery/1.11.1/jquery.js")
+    script(type="text/javascript", src="//cdn.staticfile.org/twitter-bootstrap/3.3.1/js/bootstrap.js")
+    script(src="/javascripts/app.js")

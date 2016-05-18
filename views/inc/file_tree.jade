@@ -1,0 +1,42 @@
+include ./mixins.jade
+
+
+
+
+script#folder-template(type='text/html')
+  ul.jstree-children(data-bind="foreach: nodes")
+    +ko("template: { name: 'node-template', data: $data }")
+
+script#node-template(type='text/html')
+  li.jstree-node(data-bind="css: {\
+                              'jstree-open': isExpanded() && nodes().length > 0,\
+                              'jstree-closed': !isExpanded() && nodes().length > 0,\
+                              'jstree-leaf': nodes().length === 0,\
+                              'jstree-last': !$parents[1] || ($parents[1].nodes && $parents[1].nodes().slice(-1)[0] == $data)\
+                            }")
+    i.jstree-icon.jstree-ocl(data-bind="click: toggleVisibility")
+    +ko('if: name')
+      span.jstree-node-name(data-bind="text: name, \
+                                        attr: { 'title': description },\
+                                        click: showContent")
+    +ko('if: nodes().length !== 0 && isExpanded() ')
+      +ko("template: { name: 'folder-template', data: $data }")
+
+
+.tabset-wrap
+  div
+    .tabset
+      +ko('with:widgetTree')
+        ul.nav.nav-tabs(data-bind="foreach: tabs")
+          li(data-bind='css:{active: selected},\
+                        click: $parent.select')
+            .tab-heading
+              .title(data-bind="text:name,attr:{title:name}")
+
+.file-tree-wrap
+  .file-tree-container
+    .heading 文件目录
+    .jstree-default.file-tree(data-bind='')
+      +ko('if : widgetTree.treeData ')
+        ul.jstree-container-ul(data-bind='template:{name : "folder-template", data :widgetTree.treeData}')
+

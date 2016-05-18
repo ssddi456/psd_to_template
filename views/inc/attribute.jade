@@ -1,0 +1,20 @@
+include ./mixins.jade
+
++ko('with : widgetConfig')
+  .container-fluid
+    .row
+      .menu
+        .btn-list
+          +ko('if : node')
+            span(data-bind="text: node().name")
+
+      //- 这里需要显示各种不同的可修改内容，
+      //- 需要思考一下
+  .container-fluid
+    .row
+      table.table.table-striped
+        tbody(data-bind='foreach:attributes')
+          tr
+            td(data-bind="text:$data.key")  
+            td
+              input.form-control(data-bind="value:$data.value")
