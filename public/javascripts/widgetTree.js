@@ -1,9 +1,11 @@
 define([
+  './libs/util',
   './widgetConfig',
   './widgetPreviewer',
   'underscore',
   'knockout'
 ],function(
+  util,
   widgetConfig,
   widgetPreviewer,
   __,
@@ -25,30 +27,31 @@ define([
     self.root = data.root;
     self.href = data.href;
 
-    self.style = data.style;
+    self.style = data.style || {};
+    self.effect = data.effect || {};
+
 
     self.toggleVisibility = function(vm, e) {
       e.stopPropagation();
       this.isExpanded(!this.isExpanded());
     };
 
-    self.showContent =function(_vm, e) {
+    self.showContent = function(_vm, e) {
       e.stopPropagation();
-      if( self.type == 'directory' ){
-        return;
-      }
 
-      if( vm.active_tab_name == 'source' ){
-        widgetConfig.node(_vm);
-      }
-
+      widgetConfig.node(_vm);
     };
 
     var nodes = [];
     data.nodes && data.nodes.forEach(function(node) {
       nodes.push(new NodeModel(node));
     });
+
     self.nodes = ko.observableArray(nodes);
+
+    if( self.type == 'directory' ){
+      self.bbox = util.compose_bbox( nodes );
+    }
   };
   
   var tab = function( data ) {

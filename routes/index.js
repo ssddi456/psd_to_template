@@ -30,7 +30,12 @@ var async = require('async');
 
 // var watch_pathes = [ route_relative('public'), route_relative('views') ];
 var fisKernel = require('fis-kernel');
-var watch_pathes = [ 'D:\\temp' ];
+
+var watch_pathes = [ 
+  'D:\\temp',
+  'D:\\gitchunk\\psd_to_template\\views'
+];
+
 var dest_pathes = [ path.normalize(fisKernel.project.getTempPath('www')) ];
 
 var visitable_map = [
@@ -58,39 +63,76 @@ router.get('/tree',function(req, resp, next) {
     roots = dest_pathes;
   }
 
+  fsExtra.readJSON( path.join( watch_pathes[0], 'layer_name_map.json' ), 
+    function( err, items) {
+      if( err ){
+        return next(err);
+      }
 
-  resp.json({ 
-    err : 0, 
-    items : fsExtra.readJSONSync( path.join( watch_pathes[0], 'layer_name_map.json' )),
-    roots: ['root']
-  });
+      resp.json({ 
+        err : 0, 
+        items : items,
+        roots: ['root']
+      });
+    })
+});
+
+router.get('/node_preview', function( req, resp, next ) {
+  fsExtra.readJSON( path.join( watch_pathes[0], 'layer_name_map.json' ), 
+    function( err, items) {
+      if( err ){
+        return next(err);
+      }
+
+      var nodes= Object.keys(items)
+                  .map(function( node_name ) {
+                    return items[node_name]
+                  }).sort(function(a, b) {
+                    return b.index - a.index;
+                  });
+
+      resp.render('psd_template', {
+        obj_to_style_str: function( style ) {
+          var ret = '';
+
+          Object.keys(style)
+            .forEach(function( k ) {
+              var v = style[k] + '';
+              switch(k){
+                case 'top':
+                case 'left':
+                case 'right':
+                case 'bottom':
+                case 'height':
+                case 'width':
+                  if( v.match(/[0-9]$/) ){
+                    v += 'px';
+                  }
+                  ret += k + ':' + v + '; ';
+                  return;
+                default : 
+                  ret += k + ':' + v + '; '; 
+                  return;
+              }
+            });
+          return ret;
+        },
+        nodes : nodes
+      });
+    });
 });
 
 router.get('/node_source', function( req, resp, next ) {
   var node_path = req.query.node_path;
-  var root = req.query.root;
 
-  debug(node_path, root);
+  var rExt = path.extname(node_path).slice(1);
 
-  try{
-    fisKernel.project.setProjectRoot(root);
-    var fis_node = fis.file(node_path);
-  }catch(e){
-    return next(e);
-  }
-
-  debug( 'fis_node', fis_node );
-
-  fsExtra.readFile( fis_node.realpath, 'utf8', function(err, code) {
+  fsExtra.readFile( node_path, function(err, code) {
     if(err){
       return next(err);
     }
-    if( fis_node._isText ){
-      resp.set('Content-Type', 'text/plain');
-    } else {
-      resp.set('Content-Type', fisKernel.util.getMimeType( fis_node.rExt ));
-    }
 
+    resp.set('Content-Type', fisKernel.util.getMimeType( rExt ));
 
     resp.send(code);
     resp.end();

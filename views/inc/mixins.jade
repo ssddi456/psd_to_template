@@ -2,3 +2,12 @@ mixin ko(params)
   <!-- ko !{params} -->
   block
   <!-- /ko -->
+
+
+mixin panel( head )
+  .panel.panel-default
+    .panel-heading
+      .h4 head
+    .panel-collapse
+      .panel-body
+        block

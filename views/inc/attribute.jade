@@ -1,20 +1,39 @@
 include ./mixins.jade
 
 +ko('with : widgetConfig')
-  .container-fluid
-    .row
-      .menu
-        .btn-list
-          +ko('if : node')
-            span(data-bind="text: node().name")
+  +ko('if : node')
+    .container-fluid
+      .row
+        .menu
+          .btn-list
+            +ko('if : node')
+              h4(data-bind="text: node().name")
 
-      //- 这里需要显示各种不同的可修改内容，
-      //- 需要思考一下
-  .container-fluid
-    .row
-      table.table.table-striped
-        tbody(data-bind='foreach:attributes')
-          tr
-            td(data-bind="text:$data.key")  
-            td
-              input.form-control(data-bind="value:$data.value")
+    //- 这里需要显示各种不同的可修改内容，
+    //- 需要思考一下
+
+    .container-fluid
+      .row
+        +panel('attrs')
+          table.table.table-striped
+            tbody(data-bind='foreach : attributes')
+              tr
+                td
+                  label(data-bind="text:$data.key")  
+                td
+                  +ko('if : $data.type_info')
+                    +ko('if : $data.type_info.enum')
+                      +ko('foreach : $data.type_info.enum')
+                        label
+                          input(type="radio", data-bind="value: $data, checked : $parent.value")
+                          span(data-bind="text : $data")
+
+                  +ko('ifnot : $data.type_info')
+                    input.form-control(data-bind="value:$data.value")
+
+      .row
+        +panel('html')
+          textarea.form-control(data-bind="text : html")
+      .row
+        +panel('css')
+          textarea.form-control(data-bind="text : css")

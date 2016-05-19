@@ -25,6 +25,7 @@ define([
     }, 100);
   });
 
+  vm.src('/node_preview');
 
   function format_size( val ) {
     val = String(val);
