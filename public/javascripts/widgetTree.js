@@ -16,7 +16,7 @@ define([
   var node_detail_url = '/node_source';
 
   var NodeModel = function(data) {
-  
+
     var self = this;
     
     self.isExpanded = ko.observable(true);
@@ -30,6 +30,9 @@ define([
     self.style = data.style || {};
     self.effect = data.effect || {};
 
+    self.text= data.text;
+
+    console.log( self.text, data.text );
 
     self.toggleVisibility = function(vm, e) {
       e.stopPropagation();

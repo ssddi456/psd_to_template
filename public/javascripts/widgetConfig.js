@@ -12,7 +12,7 @@ define([
     html_types : ['html', 'jade'],
 
     unit_type : ko.observable('px'),
-    unit_type : ['px', 'em'],
+    unit_types : ['px', 'em'],
 
     em_base : ko.observable(16),
 

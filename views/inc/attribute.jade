@@ -1,39 +1,77 @@
 include ./mixins.jade
 
+style.
+  .attr_editor .h4{
+    margin : 0;
+  }
+  .attr_editor .form-control{
+    padding-top:0;
+    padding-bottom:0;
+  }
+
 +ko('with : widgetConfig')
-  +ko('if : node')
+  .attr_editor
     .container-fluid
       .row
         .menu
-          .btn-list
-            +ko('if : node')
-              h4(data-bind="text: node().name")
+          +ko('if : node')
+            .h4(data-bind="text: node().name")
 
     //- 这里需要显示各种不同的可修改内容，
     //- 需要思考一下
 
     .container-fluid
-      .row
-        +panel('attrs')
-          table.table.table-striped
-            tbody(data-bind='foreach : attributes')
-              tr
-                td
-                  label(data-bind="text:$data.key")  
-                td
-                  +ko('if : $data.type_info')
-                    +ko('if : $data.type_info.enum')
-                      +ko('foreach : $data.type_info.enum')
-                        label
-                          input(type="radio", data-bind="value: $data, checked : $parent.value")
-                          span(data-bind="text : $data")
+      +ko('if : node')
+        .row(data-bind="if: node().text")
+          +panel('text')
+            textarea.form-control(data-bind="text: node().text")
 
-                  +ko('ifnot : $data.type_info')
-                    input.form-control(data-bind="value:$data.value")
+        .row
+          +panel('attrs')
+            table.table.table-striped
+              tbody(data-bind='foreach : attributes')
+                tr
+                  td
+                    label(data-bind="text:$data.key")  
+                  td
+                    +ko('if : $data.type_info')
+                      +ko('if : $data.type_info.enum')
+                        +ko('foreach : $data.type_info.enum')
+                          label
+                            input(type="radio", data-bind="value: $data, checked : $parent.value")
+                            span(data-bind="text : $data")
 
-      .row
-        +panel('html')
-          textarea.form-control(data-bind="text : html")
-      .row
-        +panel('css')
-          textarea.form-control(data-bind="text : css")
+                    +ko('ifnot : $data.type_info')
+                      input.form-control(data-bind="value:$data.value")
+
+        .row
+          .panel.panel-default
+            .panel-heading
+              .h4.form-inline
+                | html - type :
+                +ko('foreach : html_types')
+                  label.radio
+                    input(type="radio", data-bind="value: $data, checked : $parent.html_type")
+                    span(data-bind="text : $data")
+
+            .panel-collapse
+              .panel-body
+                textarea.form-control(data-bind="text : html")
+        .row
+          .panel.panel-default
+            .panel-heading
+              .h4.form-inline
+                | unit - type : 
+                +ko('foreach : unit_types')
+                  label.radio
+                    input(type="radio", data-bind="value: $data, checked : $parent.unit_type")
+                    span(data-bind="text : $data")
+                  |  
+                +ko('if : unit_type() == "em"')
+                  label
+                    input.form-control(type="text", data-bind="value: em_base", 
+                                       style="width:16px; height: auto;")
+                    | px
+            panel-collapse
+              .panel-body
+                textarea.form-control(data-bind="text : css")
