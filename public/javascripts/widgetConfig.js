@@ -12,9 +12,9 @@ define([
     html_types : ['html', 'jade'],
 
     unit_type : ko.observable('px'),
-    unit_types : ['px', 'em'],
+    unit_types : ['px', 'rem'],
 
-    em_base : ko.observable(16),
+    rem_base : ko.observable(16),
 
     html : ko.observable(''),
     css : ko.observable('')
@@ -128,6 +128,14 @@ define([
     create_exports( node );
   });
 
+  $.getJSON('/config', function( json ) {
+    var config = json.config;
+
+    vm.html_type( config.html_type );
+    vm.unit_type( config.unit_type );
+    vm.rem_base( config.rem_base );
+
+  });
 
   return vm;
 });

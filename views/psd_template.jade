@@ -11,10 +11,10 @@ body
   
   each node in nodes
     if node.src
-      img.pin(style="#{obj_to_style_str(node.style)}",src="#{'/node_source?node_path=' + node.src}")
+      img.pin(style="#{obj_to_style_str(node)}",src="#{'/node_source?node_path=' + node.src}")
     if node.effect
       if node.effect.color_overlay
         - var color_overlay = node.effect.color_overlay;
-        .pin(style="#{obj_to_style_str(node.style) + 'background-color:' + color_overlay.color + '; -webkit-mask-image: url(/node_source?node_path=' + encodeURI(node.src)  +')' }")
+        .pin(style="#{obj_to_style_str(node) + 'background-color:' + color_overlay.color + '; -webkit-mask-image: url(/node_source?node_path=' + encodeURI(node.src)  +')' }")
 
   script(src="/javascripts/livereload.js")

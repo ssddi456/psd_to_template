@@ -67,9 +67,9 @@ style.
                     input(type="radio", data-bind="value: $data, checked : $parent.unit_type")
                     span(data-bind="text : $data")
                   |  
-                +ko('if : unit_type() == "em"')
+                +ko('if : unit_type() == "rem"')
                   label
-                    input.form-control(type="text", data-bind="value: em_base", 
+                    input.form-control(type="text", data-bind="value: rem_base", 
                                        style="width:16px; height: auto;")
                     | px
             panel-collapse

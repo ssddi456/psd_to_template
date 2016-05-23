@@ -12,6 +12,8 @@ var _ = require('underscore');
 var express = require('express');
 var router = express.Router();
 
+
+
 /* GET home page. */
 router.get('/', function(req, resp, next) {
   resp.render('index', { title: 'Express' });
@@ -77,6 +79,7 @@ router.get('/tree',function(req, resp, next) {
     })
 });
 
+var attributs_to_css = require('../libs/attributs_to_css');
 router.get('/node_preview', function( req, resp, next ) {
   fsExtra.readJSON( path.join( watch_pathes[0], 'layer_name_map.json' ), 
     function( err, items) {
@@ -92,30 +95,8 @@ router.get('/node_preview', function( req, resp, next ) {
                   });
 
       resp.render('psd_template', {
-        obj_to_style_str: function( style ) {
-          var ret = '';
-
-          Object.keys(style)
-            .forEach(function( k ) {
-              var v = style[k] + '';
-              switch(k){
-                case 'top':
-                case 'left':
-                case 'right':
-                case 'bottom':
-                case 'height':
-                case 'width':
-                  if( v.match(/[0-9]$/) ){
-                    v += 'px';
-                  }
-                  ret += k + ':' + v + '; ';
-                  return;
-                default : 
-                  ret += k + ':' + v + '; '; 
-                  return;
-              }
-            });
-          return ret;
+        obj_to_style_str: function( node ) {
+          return attributs_to_css(node, {});
         },
         nodes : nodes
       });
@@ -168,6 +149,9 @@ router.get('/node_dest', function( req, resp, next ) {
   resp.end();
 });
 
+router.post('/change_node', function( req, resp, next ) {
+  
+});
 
 router.get('/recompile', function( req, resp, next ) {
   compile(function(e) {
