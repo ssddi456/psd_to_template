@@ -19,9 +19,12 @@ define([
 
     var self = this;
     
+    self.origin = data;
+
     self.isExpanded = ko.observable(true);
     self.description = ko.observable( data.description );
     self.name = ko.observable( data.name );
+
 
     self.type = data.type;
     self.root = data.root;
@@ -92,7 +95,7 @@ define([
       var parent = nodes[node.parent];
 
       node.type = node.is_group ? 'directory' : 'file';
-      node.description = node.class_name;
+      node.description = key;
       node.name = node.class_name;
 
       if( parent ){

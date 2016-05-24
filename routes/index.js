@@ -12,6 +12,8 @@ var _ = require('underscore');
 var express = require('express');
 var router = express.Router();
 
+var tree_with_patch = require('../libs/tree_with_patch');
+
 
 
 /* GET home page. */
@@ -53,54 +55,49 @@ var visitable_map = [
 
 var href_map = {};
 
+var psd_tree = tree_with_patch( path.join( watch_pathes[0], 'layer_name_map.json' ) );
 
 router.get('/tree',function(req, resp, next) {
   var type = req.query.type;
-  var items = []; // files, directories, symlinks, etc
 
-  var roots;
-  if( type == 'source' ){
-    roots = watch_pathes;
-  } else {
-    roots = dest_pathes;
-  }
+  psd_tree.get_patched(function( err, tree ) {
+    if( err ){
+      return next(err);
+    }
 
-  fsExtra.readJSON( path.join( watch_pathes[0], 'layer_name_map.json' ), 
-    function( err, items) {
-      if( err ){
-        return next(err);
-      }
+    resp.json({ 
+      err : 0, 
+      items : tree,
+      roots: ['root']
+    });
 
-      resp.json({ 
-        err : 0, 
-        items : items,
-        roots: ['root']
-      });
-    })
+  });
+
 });
 
 var attributs_to_css = require('../libs/attributs_to_css');
 router.get('/node_preview', function( req, resp, next ) {
-  fsExtra.readJSON( path.join( watch_pathes[0], 'layer_name_map.json' ), 
-    function( err, items) {
-      if( err ){
-        return next(err);
-      }
 
-      var nodes= Object.keys(items)
-                  .map(function( node_name ) {
-                    return items[node_name]
-                  }).sort(function(a, b) {
-                    return b.index - a.index;
-                  });
+  psd_tree.get_patched(function( err, items) {
+    if( err ){
+      return next(err);
+    }
 
-      resp.render('psd_template', {
-        obj_to_style_str: function( node ) {
-          return attributs_to_css(node, {});
-        },
-        nodes : nodes
-      });
+    var nodes= Object.keys(items)
+                .map(function( node_name ) {
+                  return items[node_name]
+                }).sort(function(a, b) {
+                  return b.index - a.index;
+                });
+
+    resp.render('psd_template', {
+      obj_to_style_str: function( node ) {
+        return attributs_to_css(node, {});
+      },
+      nodes : nodes
     });
+  });
+
 });
 
 router.get('/node_source', function( req, resp, next ) {
@@ -150,7 +147,19 @@ router.get('/node_dest', function( req, resp, next ) {
 });
 
 router.post('/change_node', function( req, resp, next ) {
-  
+  psd_tree.edit( req.body, function( err ) {
+    if(err){
+      next(err);
+    } else {
+      resp.json({
+        err : 0
+      });
+    }
+  })
+});
+
+router.get('/compile_node', function( req, resp, next ) {
+    
 });
 
 router.get('/recompile', function( req, resp, next ) {

@@ -9,7 +9,9 @@ body
       position: absolute;
     }
   
-  each node in nodes
+  each node, idx in nodes
+    if !node
+      - console.log( node, idx, nodes.length );
     if node.src
       img.pin(style="#{obj_to_style_str(node)}",src="#{'/node_source?node_path=' + node.src}")
     if node.effect

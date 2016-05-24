@@ -32,7 +32,7 @@ var size_keys = [
 // };
 
 function normalize_value( string, options ) {
-  if(typeof string == 'string' && string.match(/[0-9]$/)){
+  if(typeof string == 'string' && !string.match(/[0-9]$/)){
     return string;
   }
   string = 1 * string;

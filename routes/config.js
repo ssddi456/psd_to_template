@@ -11,7 +11,7 @@ var debug = require('debug')(debug_name);
 var _ = require('underscore');
 
 var express = require('express');
-var router = express.Router();
+var router = module.exports = express.Router();
 
 var storage = require('../libs/storage');
 

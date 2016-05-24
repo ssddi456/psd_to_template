@@ -70,7 +70,7 @@ function apply_patch( node_map, patch_ops ) {
       return;
     }
 
-    switch( patch_op ){
+    switch( patch_op.op ){
       case 'deleted' : 
         delete node_map[patch_op.node_name];
         var parent = node_map[ params.parent ];
@@ -110,6 +110,46 @@ function merge_patch ( old_patches, new_patches ) {
   });
 
   var names_diff = arr_diff( old_names, new_names );
+
+  old_patches = old_patches.filter(function( patch) {
+    return names_diff.deleted.indexOf(patch.node_name) == -1;
+  });
+
+  names_diff.same.forEach(function( name ) {
+    var old_patch = _.find(old_patches, function( patch ) {
+                      return patch.node_name == name;
+                    });
+    if( old_patch.op == 'deleted' ){
+      return;
+    }
+
+    var new_patch = _.find(new_patches, function( patch ) {
+                      return patch.node_name == name;
+                    });
+
+    if( new_patch.op == 'deleted' ){
+      old_patch.op = 'deleted';
+      old_patch.params.parent = new_patch.parent;
+    } else {
+      // 属性修改的patch
+      ['style', 'effect'].forEach(function( name ) {
+        var old_params = old_patch.params[name];
+        var new_params = new_patch.params[name];
+        if( old_params ){
+          if( new_params ){
+            var attr_patch = get_plain_object_patch(old_params, new_params);
+            if( attr_patch ){
+              _.extend(old_params, attr_patch);
+            }
+          } else {
+            // skip;
+          }
+        } else if( new_params ){
+          old_patch.params[name] = new_params;
+        }
+      })
+    }
+  });
 
   // 
   // todos 
@@ -199,6 +239,19 @@ var get_attr_patch = function( node_old, node_new ) {
 
 var get_plain_object_patch = function( old_style, new_style ){
 
+  if( !old_style ){
+    if( new_style ){
+      return _.extend({}, new_style);
+    } else {
+      return;
+    }
+  } else {
+    if( !new_style ){
+      return;
+    } else {
+      // pass
+    }
+  }
   var ret = {};
 
 

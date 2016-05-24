@@ -59,17 +59,12 @@ define([
 
   function create_html( node ) {
     var ret = '';
-    var type = vm.html_type();
-
-
 
     vm.html(ret);
   }
 
   function create_css( node ) {
     var ret = '';
-
-
 
     vm.css(ret);
   }
@@ -91,6 +86,25 @@ define([
     }
   };
 
+  function change_node_attribute ( node ) {
+    $.post('/change_node', {
+      node_name : node.description,
+      attributes: {
+        style :      node.style,
+        effect :     node.effect,
+
+        children :   node.origin.children,
+        parent :     node.origin.parent,
+        is_group :   node.origin.is_group,
+        class_name : node.origin.class_name,
+        index :      node.origin.index,
+      }
+    }, function( json ) {
+      console.log( json );
+      create_exports(node);
+    });
+  }
+
   function editable_property ( node, attr_name ) {
     var data = node[attr_name];
 
@@ -101,7 +115,7 @@ define([
               value.subscribe(function( value ) {
                 data[key] = value;
 
-                create_exports( node );
+                change_node_attribute( node );
               });
 
               var ret = {
@@ -135,7 +149,21 @@ define([
     vm.unit_type( config.unit_type );
     vm.rem_base( config.rem_base );
 
+    vm.html_type.subscribe(update_config);
+    vm.unit_type.subscribe(update_config);
+    vm.rem_base.subscribe(update_config);
   });
+
+  function update_config() {
+    $.post('/config/update',{
+      html_type : vm.html_type(),
+      unit_type : vm.unit_type(),
+      rem_base : vm.rem_base()
+    },function() {
+      create_exports();
+    })
+  }
+
 
   return vm;
 });
