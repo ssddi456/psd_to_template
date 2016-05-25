@@ -15,7 +15,8 @@ var exports_config_selector = { exports_config : true };
 var default_config = {
   html_type : 'html',
   unit_type : 'px',
-  rem_base  : 16
+  rem_base  : 16,
+  exports_config : true
 };
 
 var _storage = module.exports = {
@@ -53,6 +54,6 @@ var _storage = module.exports = {
     }
 
     updates.timestamp = '' + Date.now();
-    storage.update(exports_config_selector, { $set : updates }, done);
+    storage.update(exports_config_selector, { $set : updates }, { upsert : true },done);
   }
 };

@@ -194,3 +194,8 @@
 .menu .btn-list.right {
     float: right
 }
+
+
+.panel-body{
+    padding:0;
+}

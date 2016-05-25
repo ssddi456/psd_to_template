@@ -1,8 +1,6 @@
 include ./mixins.jade
 
 
-
-
 script#folder-template(type='text/html')
   ul.jstree-children(data-bind="foreach: nodes")
     +ko("template: { name: 'node-template', data: $data }")

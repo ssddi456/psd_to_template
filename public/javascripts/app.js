@@ -1,10 +1,12 @@
 require([
   'knockout',
+  './custom_bindings',
   './widgetConfig',
   './widgetTree',
   './widgetPreviewer'
 ],function(
   ko,
+  custom_bindings,
   widgetConfig,
   widgetTree,
   widgetPreviewer

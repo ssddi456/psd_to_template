@@ -13,7 +13,7 @@ var express = require('express');
 var router = express.Router();
 
 var tree_with_patch = require('../libs/tree_with_patch');
-
+var storage = require('../libs/storage');
 
 
 /* GET home page. */
@@ -89,8 +89,6 @@ router.get('/node_preview', function( req, resp, next ) {
                 }).sort(function(a, b) {
                   return b.index - a.index;
                 });
-    
-    fsExtra.writeJSON(path.join(__dirname, '../test/', Date.now() + '.json' ), nodes);
 
     resp.render('psd_template', {
       obj_to_style_str: function( node ) {
@@ -161,7 +159,19 @@ router.post('/change_node', function( req, resp, next ) {
 });
 
 router.get('/compile_node', function( req, resp, next ) {
-    
+  var node = req.query;
+  storage.get_exports_config(function(err, conf) {
+    if( err ){
+      return next(new Error('render config load failed'));
+    }
+    conf = _.extend({ beautify : true }, conf);
+    var css = attributs_to_css( node, conf);
+    resp.json({
+      err : 0,
+      css : css
+    })
+  });
+
 });
 
 router.get('/recompile', function( req, resp, next ) {

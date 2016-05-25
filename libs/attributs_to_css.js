@@ -44,13 +44,18 @@ function normalize_value( string, options ) {
 }
 
 var attributs_to_css = module.exports = function( layer_node, options ) {
+
+
+  var style = layer_node.style;
+
+  if( !style ){
+    return '';
+  }
+
+  var rets  = [];
   options = _.extend({
     unit_type : 'px'
   }, options);
-
-  var rets  = [];
-
-  var style = layer_node.style;
 
   var origin_style_keys = Object.keys(style);
   var plain_styles = _.difference(origin_style_keys, position_keys.concat(size_keys));
@@ -60,7 +65,9 @@ var attributs_to_css = module.exports = function( layer_node, options ) {
   });
 
   size_keys.forEach(function( key ) {
-    rets.push( key + ':' + normalize_value( style[key], options) );
+    if( key in style ){
+      rets.push( key + ':' + normalize_value( style[key], options) );
+    }
   });
 
   var effects = _.extend({

@@ -6,7 +6,7 @@ define([
 
   var vm = {
     attributes : ko.observableArray(),
-    node : ko.observable().extend({ rateLimit : 1000 }),
+    node : ko.observable(),
 
     html_type : ko.observable('html'),
     html_types : ['html', 'jade'],
@@ -64,9 +64,9 @@ define([
   }
 
   function create_css( node ) {
-    var ret = '';
-
-    vm.css(ret);
+    $.getJSON('/compile_node', node, function(json) {
+      vm.css(json.css);
+    });
   }
 
   function create_exports ( node ) {
@@ -86,22 +86,26 @@ define([
     }
   };
 
+  function get_actual_node_info ( node ) {
+    return {
+      style :      node.style,
+      effect :     node.effect,
+
+      children :   node.origin.children,
+      parent :     node.origin.parent,
+      is_group :   node.origin.is_group,
+      class_name : node.origin.class_name,
+      index :      node.origin.index,
+    };  
+  }
   function change_node_attribute ( node ) {
+    var actual_node = get_actual_node_info(node);
+
     $.post('/change_node', {
       node_name : node.description,
-      attributes: {
-        style :      node.style,
-        effect :     node.effect,
-
-        children :   node.origin.children,
-        parent :     node.origin.parent,
-        is_group :   node.origin.is_group,
-        class_name : node.origin.class_name,
-        index :      node.origin.index,
-      }
+      attributes: actual_node
     }, function( json ) {
-      console.log( json );
-      create_exports(node);
+      create_exports(actual_node);
     });
   }
 
@@ -139,7 +143,7 @@ define([
 
     vm.attributes(attributes);
 
-    create_exports( node );
+    create_exports( get_actual_node_info(node) );
   });
 
   $.getJSON('/config', function( json ) {
@@ -160,7 +164,7 @@ define([
       unit_type : vm.unit_type(),
       rem_base : vm.rem_base()
     },function() {
-      create_exports();
+      create_exports( get_actual_node_info(vm.node()) );
     })
   }
 
