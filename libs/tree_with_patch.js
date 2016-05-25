@@ -8,7 +8,7 @@ if( debug_name == 'index'){
 })()
 var debug = require('debug')(debug_name);
 var async = require('async');
-
+var _ = require('underscore');
 var events = require('events');
 
 var fsExtra = require('fs-extra');
@@ -71,7 +71,11 @@ var tree_with_patch = module.exports = function( source_data_path ) {
 
         params.forEach(function( param ){
           debug('modifier', param.node_name, param.attributes);
-          patched_data[param.node_name] = param.attributes;
+
+          var origin_node = patched_data[param.node_name];
+
+          _.extendOwn(origin_node.style, param.attributes.style);
+          _.extendOwn(origin_node.effect, param.attributes.effect);
         });
 
         patches = tree_patcher( origin_data, patched_data );
@@ -116,11 +120,10 @@ var tree_with_patch = module.exports = function( source_data_path ) {
   async.waterfall([function(done) {
     psd_tree.get_patched(function(err, res) {
       console.log( err );
-      console.log( res );
 
       console.log( Object.keys(res).length );
       var attributes = res['root_potion red_组 1_7 副本'];
-      attributes.style.left = 20;
+      attributes.style.left = 120;
 
       done(null, {
         node_name : 'root_potion red_组 1_7 副本',
@@ -136,12 +139,24 @@ var tree_with_patch = module.exports = function( source_data_path ) {
   function( done ) {
     psd_tree.get_patched(function(err, res) {
       console.log( err );
-      console.log( res );
+
       console.log( Object.keys(res).length );
 
-      done();
+      var attributes = res['root_potion red_组 1_7 副本'];
+      attributes.style.left = 20;
+
+      done(null, {
+        node_name : 'root_potion red_组 1_7 副本',
+        attributes : attributes
+      });
+
     });
 
+  },
+  function(editer, done) {
+    psd_tree.edit(editer, function() {
+      done();
+    });
   }],function() {
     debug( 'all done');
   })

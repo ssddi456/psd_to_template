@@ -269,7 +269,12 @@ var get_plain_object_patch = function( old_style, new_style ){
   });
 
   names_diff.same.forEach(function( name ) {
-    if( old_style[name] !== new_style[name]){
+    var new_style_value = new_style[name];
+    if( !isNaN(1*new_style_value) ){
+      new_style_value = 1*new_style_value;
+    }
+
+    if( old_style[name] !== new_style_value){
       ret[name] = new_style[name];
       has_diff = true;
     }

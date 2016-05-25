@@ -16,7 +16,7 @@ var position_keys = [
 ];
 
 var size_keys = [
-  'width', 'height'
+  'width', 'height', 'font-size'
 ];
 // 
 // var name_type_map = {

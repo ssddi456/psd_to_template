@@ -89,6 +89,8 @@ router.get('/node_preview', function( req, resp, next ) {
                 }).sort(function(a, b) {
                   return b.index - a.index;
                 });
+    
+    fsExtra.writeJSON(path.join(__dirname, '../test/', Date.now() + '.json' ), nodes);
 
     resp.render('psd_template', {
       obj_to_style_str: function( node ) {
