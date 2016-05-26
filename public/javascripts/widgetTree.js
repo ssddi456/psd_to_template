@@ -34,8 +34,9 @@ define([
     self.effect = data.effect || {};
 
     self.text= data.text;
+    self.class_name = data.class_name;
+    self.src = data.src;
 
-    console.log( self.text, data.text );
 
     self.toggleVisibility = function(vm, e) {
       e.stopPropagation();

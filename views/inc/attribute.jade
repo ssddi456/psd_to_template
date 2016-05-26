@@ -1,16 +1,5 @@
 include ./mixins.jade
 
-style.
-  .attr_editor .h4{
-    margin : 0;
-  }
-  .attr_editor .form-control{
-    padding-top: 0;
-    padding-bottom: 0;
-    background: #fff;
-  }
-  
-
 
 +ko('with : widgetConfig')
   .attr_editor
@@ -30,6 +19,39 @@ style.
             textarea.form-control(data-bind="autoscale: node().text",wrap="off",readonly)
 
         .row
+          .panel.panel-default
+            .panel-heading
+              .h4.form-inline
+                | css - : 
+                +ko('foreach : unit_types')
+                  label.radio
+                    input(type="radio", data-bind="value: $data, checked : $parent.unit_type")
+                    span(data-bind="text : $data")
+                  |  
+                +ko('if : unit_type() == "rem"')
+                  label
+                    input.form-control(type="text", data-bind="value: rem_base", 
+                                       style="width:20px; height: auto; padding:0;")
+                    | px
+            panel-collapse
+              .panel-body
+                textarea.form-control(data-bind="autoscale : css",wrap="off",readonly)
+
+        .row
+          .panel.panel-default
+            .panel-heading
+              .h4.form-inline
+                | html - :
+                +ko('foreach : html_types')
+                  label.radio
+                    input(type="radio", data-bind="value: $data, checked : $parent.html_type")
+                    span(data-bind="text : $data")
+
+            .panel-collapse
+              .panel-body
+                textarea.form-control(data-bind="autoscale : html",wrap="off",readonly)
+ 
+        .row
           +panel('attrs')
             table.table.table-striped
               tbody(data-bind='foreach : attributes')
@@ -47,34 +69,3 @@ style.
                     +ko('ifnot : $data.type_info')
                       input.form-control(data-bind="value:$data.value")
 
-        .row
-          .panel.panel-default
-            .panel-heading
-              .h4.form-inline
-                | html - type :
-                +ko('foreach : html_types')
-                  label.radio
-                    input(type="radio", data-bind="value: $data, checked : $parent.html_type")
-                    span(data-bind="text : $data")
-
-            .panel-collapse
-              .panel-body
-                textarea.form-control(data-bind="autoscale : html",wrap="off",readonly)
-        .row
-          .panel.panel-default
-            .panel-heading
-              .h4.form-inline
-                | unit - type : 
-                +ko('foreach : unit_types')
-                  label.radio
-                    input(type="radio", data-bind="value: $data, checked : $parent.unit_type")
-                    span(data-bind="text : $data")
-                  |  
-                +ko('if : unit_type() == "rem"')
-                  label
-                    input.form-control(type="text", data-bind="value: rem_base", 
-                                       style="width:20px; height: auto; padding:0;")
-                    | px
-            panel-collapse
-              .panel-body
-                textarea.form-control(data-bind="autoscale : css",wrap="off",readonly)

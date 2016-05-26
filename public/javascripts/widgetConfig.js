@@ -9,7 +9,7 @@ define([
     node : ko.observable(),
 
     html_type : ko.observable('html'),
-    html_types : ['html', 'jade'],
+    html_types : ['html', 'jade', 'svg'],
 
     unit_type : ko.observable('px'),
     unit_types : ['px', 'rem'],
@@ -42,6 +42,9 @@ define([
     "id"
   ];
 
+  function get_indents( n ) {
+    return Array(n+1).join('  ');
+  }
 
   // 这里需要实现一个编辑器
   // 
@@ -57,8 +60,79 @@ define([
   //   生辰 css
   // 
 
+  var html_generators = {
+    'html' : function( node, indent ) {
+      indent = indent || 0;
+      if( node.type == 'directory' ){
+        var code = [
+                      get_indents(indent) + '<div class="'+ node.class_name.slice(1) + '">', 
+                      node.nodes()
+                        .map(function( node ) {
+                          return html_generators['html'](node, indent+1);
+                        }).join('\n'),
+                      get_indents(indent) + '</div>'
+                   ].join('\n');
+        return code;
+      } else {
+        return get_indents(indent) + '<div class="' + node.class_name.slice(1) + '">' 
+                + (node.text || '') + '</div>';
+      }
+    },
+    'jade' : function( node, indent ) {
+      indent = indent || 0;
+
+      if( node.type == 'directory' ){
+        var code = [
+                      get_indents(indent) + node.class_name,
+                      node.nodes()
+                        .map(function( node ) {
+                          return html_generators['jade'](node, indent+1);
+                        }).join('\n'),
+                   ].join('\n');
+        return code;
+      } else {
+        return get_indents(indent) + node.class_name;
+      }
+    },
+    'svg'  : function( node, indent ) {
+      indent = indent || 0;
+      
+      if( node.type == 'directory' ){
+        var code = [
+                      get_indents(indent) + '<g class="'+ node.class_name.slice(1) + '">', 
+                      node.nodes()
+                        .map(function( node ) {
+                          return html_generators['svg'](node, indent+1);
+                        }).join('\n'),
+                      get_indents(indent) + '</g>'
+                   ].join('\n');
+        return code;
+      } else {
+        var style = node.style;
+        var subindent = get_indents(indent+1);
+        indent = get_indents(indent);
+        if( node.text ){
+          return indent + '<text class="' + node.class_name.slice(1) + '" \n'
+                  + subindent + 'x="' + style.left + '" y="' + style.top + '" \n'
+                  + subindent + 'width="' + style.width + '" height="' + style.height + '">\n'
+                  + subindent + '<tspan>' + node.text + '</tspan>\n'
+                  + indent + '</text>';
+        } else {
+          return indent + '<image class="' + node.class_name.slice(1) + '" \n'
+                  + subindent + 'x="' + style.left + '" y="' + style.top + '" \n'
+                  + subindent + 'width="' + style.width + '" height="' + style.height + '" \n'
+                  + subindent + 'xlink:href="' + node.src + '" '
+                  + indent + '></image>';
+        }
+      }
+    }
+  };
+
+
   function create_html( node ) {
-    var ret = '';
+    var type = vm.html_type();
+
+    var ret = html_generators[type](node);
 
     vm.html(ret);
   }
@@ -71,7 +145,9 @@ define([
 
   function create_exports ( node ) {
     create_html(node);
-    create_css(node);
+
+    var actual_node = get_actual_node_info(node);
+    create_css(actual_node);
   }
 
   var name_type_map = {
@@ -105,7 +181,8 @@ define([
       node_name : node.description,
       attributes: actual_node
     }, function( json ) {
-      create_exports(actual_node);
+
+      create_exports(node);
     });
   }
 
@@ -143,7 +220,7 @@ define([
 
     vm.attributes(attributes);
 
-    create_exports( get_actual_node_info(node) );
+    create_exports( node );
   });
 
   $.getJSON('/config', function( json ) {
@@ -164,7 +241,7 @@ define([
       unit_type : vm.unit_type(),
       rem_base : vm.rem_base()
     },function() {
-      create_exports( get_actual_node_info(vm.node()) );
+      create_exports( vm.node() );
     })
   }
 

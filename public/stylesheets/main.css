@@ -199,3 +199,18 @@
 .panel-body{
     padding:0;
 }
+
+.attr_editor .h4{
+    margin : 0;
+}
+
+.attr_editor .form-control{
+    padding-top: 0;
+    padding-bottom: 0;
+    background: #fff;
+    font-family: "微软雅黑", monospace;
+    cursor: pointer;
+}
+.attr_editor .panel-body .table{
+    margin-bottom: 0;
+}
