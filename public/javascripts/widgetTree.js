@@ -118,6 +118,12 @@ define([
                   }) 
           })
       );
+
+      var root = node_map[data.roots[0]];
+
+      widgetPreviewer.width( root.style.width );
+      widgetPreviewer.height( root.style.height );
+
     });
   },300);
 

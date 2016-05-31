@@ -66,7 +66,7 @@ define([
       if( node.type == 'directory' ){
         var code = [
                       get_indents(indent) + '<div class="'+ node.class_name.slice(1) + '">', 
-                      node.nodes()
+                      node.nodes().reverse()
                         .map(function( node ) {
                           return html_generators['html'](node, indent+1);
                         }).join('\n'),
@@ -84,7 +84,7 @@ define([
       if( node.type == 'directory' ){
         var code = [
                       get_indents(indent) + node.class_name,
-                      node.nodes()
+                      node.nodes().reverse()
                         .map(function( node ) {
                           return html_generators['jade'](node, indent+1);
                         }).join('\n'),
@@ -100,7 +100,7 @@ define([
       if( node.type == 'directory' ){
         var code = [
                       get_indents(indent) + '<g class="'+ node.class_name.slice(1) + '">', 
-                      node.nodes()
+                      node.nodes().reverse()
                         .map(function( node ) {
                           return html_generators['svg'](node, indent+1);
                         }).join('\n'),
@@ -137,17 +137,42 @@ define([
     vm.html(ret);
   }
 
+  function create_css_frame( node, upper_lv ) {
+    upper_lv = upper_lv  || '';
+    if( upper_lv ){
+      upper_lv += ' ';
+    }
+
+    var rets = [];
+    var cur_name = upper_lv + node.class_name;
+
+    rets.push( cur_name );
+    rets.push( '{' );
+    rets.push( '}' );
+
+    node.nodes().reverse().forEach(function( node ) {
+      rets.push( create_css_frame( node, cur_name ) );
+    });
+
+    return rets.join('\n');
+  }
+
   function create_css( node ) {
-    $.getJSON('/compile_node', node, function(json) {
+    if( node.type == 'directory') {
+      vm.css(create_css_frame(node));
+      return;
+    }
+
+    var actual_node = get_actual_node_info(node);
+
+    $.getJSON('/compile_node', actual_node, function(json) {
       vm.css(json.css);
     });
   }
 
   function create_exports ( node ) {
     create_html(node);
-
-    var actual_node = get_actual_node_info(node);
-    create_css(actual_node);
+    create_css(node);
   }
 
   var name_type_map = {
