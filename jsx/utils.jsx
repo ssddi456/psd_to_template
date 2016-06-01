@@ -42,8 +42,9 @@ function get_active_layer_attr( psKey, type ) {
   }
 }
 
-function get_layer_e() {
-    
+
+function get_layer_effect_visible () {
+  return get_active_layer_attr( s2t('layerFXVisible'), 'Boolean' );
 }
 
 Array.prototype.forEach = function( handle ) {
@@ -51,4 +52,45 @@ Array.prototype.forEach = function( handle ) {
   for(var i = 0; i< len; i++){
     handle.call(this[i], this[i], i, this);
   }
+}
+
+var _set_effects_viz = function(id) {
+  var desc = new ActionDescriptor();
+  var list = new ActionList();
+  var ref = new ActionReference();
+  ref.putClass(c2t('Lefx'));
+  ref.putEnumerated(c2t("Lyr "), c2t("Ordn"), c2t("Trgt"));
+  list.putReference(ref);
+  desc.putList(c2t('null'), list);
+  executeAction(c2t(id), desc, DialogModes.NO);
+};
+
+var hide_layer_effects = function() {
+  _set_effects_viz('Hd  ');
+};
+
+var show_layer_effects = function() {
+  _set_effects_viz('Shw ');
+};
+
+
+function unit_as_px( unit_value ) {
+  var ret = '';
+  unit_value.convert("px");
+  return unit_value.value;
+}
+
+function bounds_to_bbox( bounds, exports ) {
+  exports = exports || {};
+
+  exports.left = unit_as_px(bounds[0]);
+  exports.top = unit_as_px(bounds[1]);
+  exports.right = unit_as_px(bounds[2]);
+  exports.bottom = unit_as_px(bounds[3]);
+
+
+  exports.width = exports.right - exports.left;
+  exports.height = exports.bottom - exports.top;
+
+  return exports;
 }

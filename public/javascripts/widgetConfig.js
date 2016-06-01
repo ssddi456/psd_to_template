@@ -10,7 +10,9 @@ define([
 
     html_type : ko.observable('html'),
     html_types : ['html', 'jade', 'svg'],
+    text_middle : ko.observable(false),
 
+    with_root : ko.observable(false),
     unit_type : ko.observable('px'),
     unit_types : ['px', 'rem'],
 
@@ -112,9 +114,13 @@ define([
         var subindent = get_indents(indent+1);
         indent = get_indents(indent);
         if( node.text ){
+          var ext_style = node.ext_style;
+          var left = vm.text_middle() ? ( ext_style.left  + ext_style.width / 2 ) : ext_style.left;
+
           return indent + '<text class="' + node.class_name.slice(1) + '" \n'
-                  + subindent + 'x="' + style.left + '" y="' + style.top + '" \n'
-                  + subindent + 'width="' + style.width + '" height="' + style.height + '">\n'
+                  + subindent + 'x="' + left + '" y="' + ext_style.bottom + '" \n'
+                  + subindent + 'text-anchor="middle" '
+                  + subindent + 'width="' + ext_style.width + '" height="' + ext_style.height + '">\n'
                   + subindent + '<tspan>' + node.text + '</tspan>\n'
                   + indent + '</text>';
         } else {
@@ -128,12 +134,62 @@ define([
     }
   };
 
+  var root_map = {
+    'html' : function( code ) {
+      return [
+        '<!DOCTYPE html>',
+        '<html lang="en">',
+        '  <head>',
+        '    <meta charset="UTF-8">',
+        '    <title>Document</title>',
+        '  </head>',
+        '  <body>',
+        code,
+        '  </body>',
+        '</html>',
+      ].join('\n');        
+    },
+    'jade' : function( code ) {
+      return [
+        "<!DOCTYPE html>",
+        "html(lang='en')",
+        "  head",
+        "    meta(charset='UTF-8')",
+        "    title Document",
+        "",
+        "    link(rel='stylesheet', type='text/css', href='//cdn.staticfile.org/twitter-bootstrap/3.3.1/css/bootstrap.min.css')",
+        "    link(rel='stylesheet', href='/stylesheets/main.css')",
+        "    link(rel='stylesheet', href='/stylesheets/jstree.css')",
+        "",
+        "  body",
+        code,
+      ].join('\n');        
+    },
+    'svg'  : function( code ) {
+      return [
+        '<svg ',
+        '  version="0.1" ',
+        '  xmlns="http://www.w3.org/2000/svg" ',
+        '  xmlns:xlink="http://www.w3.org/1999/xlink" >',
+        code,
+        '</svg>'
+      ].join('\n');
+    }
+  };
 
   function create_html( node ) {
     var type = vm.html_type();
 
-    var ret = html_generators[type](node);
+    var indent = 0;
+    var with_root = vm.with_root();
+    if( with_root ){
+      indent = 2;
+    }
 
+    var ret = html_generators[type](node, indent);
+    if( with_root ){
+      ret = root_map[type](ret);
+    }
     vm.html(ret);
   }
 
@@ -252,10 +308,16 @@ define([
     var config = json.config;
 
     vm.html_type( config.html_type );
+    vm.with_root( !!config.with_root );
+    vm.text_middle( !!config.text_middle );
+
     vm.unit_type( config.unit_type );
     vm.rem_base( config.rem_base );
 
     vm.html_type.subscribe(update_config);
+    vm.with_root.subscribe(update_config);
+    vm.text_middle.subscribe(update_config);
+
     vm.unit_type.subscribe(update_config);
     vm.rem_base.subscribe(update_config);
   });
@@ -263,6 +325,9 @@ define([
   function update_config() {
     $.post('/config/update',{
       html_type : vm.html_type(),
+      with_root : vm.with_root(),
+      text_middle : vm.text_middle(),
+
       unit_type : vm.unit_type(),
       rem_base : vm.rem_base()
     },function() {

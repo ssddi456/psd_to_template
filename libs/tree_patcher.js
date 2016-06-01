@@ -10,6 +10,15 @@ if( debug_name == 'index'){
 var debug = require('debug')(debug_name);
 var _ = require('underscore');
 
+
+
+var attr_need_patch_list = [
+  'style',
+  'ext_style',
+  'effect'
+];
+
+
 var get_patcher = module.exports = function( tree_old, tree_new ) {
   
   var tree_info_old = get_tree_info(tree_old);
@@ -60,6 +69,7 @@ function patch_op ( name, op, params ) {
   };
 }
 
+
 function apply_patch( node_map, patch_ops ) {
   patch_ops.forEach(function( patch_op ) {
     var node = node_map[patch_op.node_name];
@@ -84,12 +94,11 @@ function apply_patch( node_map, patch_ops ) {
         break;
 
       case 'modified' : 
-        if( params.style ){
-          _.extend(node.style, params.style);
-        }
-        if( params.effect ){
-          _.extend(node.effect, params.effect);
-        }
+        attr_need_patch_list.forEach(function( name ) {
+          if( params[name] ){
+            _.extend(node[name], params[name]);
+          }
+        })
         break;
     }
   });
@@ -132,7 +141,7 @@ function merge_patch ( old_patches, new_patches ) {
       old_patch.params.parent = new_patch.parent;
     } else {
       // 属性修改的patch
-      ['style', 'effect'].forEach(function( name ) {
+      attr_need_patch_list.forEach(function( name ) {
         var old_params = old_patch.params[name];
         var new_params = new_patch.params[name];
         if( old_params ){
@@ -221,16 +230,14 @@ function arr_diff( old, _new ) {
 var get_attr_patch = function( node_old, node_new ) {
   var ret = {};
   var diff = false;
-  var style = get_plain_object_patch( node_old.style, node_new.style );
-  if( style ){
-    ret['style'] = style;
-    diff =true;
-  }
-  var effect = get_plain_object_patch( node_old.effect, node_new.effect )
-  if( effect ){
-    ret['effect'] = effect;
-    diff =true;
-  }
+
+  attr_need_patch_list.forEach(function( name ) {
+    var style = get_plain_object_patch( node_old[ name ], node_new[ name ] );
+    if( style ){
+      ret[ name ] = style;
+      diff =true;
+    }
+  });
 
   if( diff ){
     return ret;

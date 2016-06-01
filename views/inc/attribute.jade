@@ -46,6 +46,14 @@ include ./mixins.jade
                   label.radio
                     input(type="radio", data-bind="value: $data, checked : $parent.html_type")
                     span(data-bind="text : $data")
+                  | &nbsp;
+                label.checkbox
+                  input(type="checkbox", data-bind="checked: with_root")
+                  span with root
+                | &nbsp;
+                label.checkbox
+                  input(type="checkbox", data-bind="checked: text_middle")
+                  span text middle
 
             .panel-collapse
               .panel-body

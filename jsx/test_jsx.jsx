@@ -47,14 +47,12 @@ if( !docRef ){
 
     var res = get_active_layer_attr( s2t('layerFXVisible'), 'Boolean' );
     $.writeln( obj2str(res) );
+
+    if( res ){
+      hide_layer_effects();
+    } else {
+      show_layer_effects();
+    }
   };
 
-  var desc = new ActionDescriptor();
-  var ref = new ActionReference();
-
-  ref.putClass( s2t('layerEffects') );
-  ref.putEnumerated( c2t('Lyr '), c2t('Ordn'), c2t('Trgt') );     
-  desc.putReference(c2t('null'), ref);
-
-  executeAction(s2t('show'), desc, DialogModes.NO);
 }

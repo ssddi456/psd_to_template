@@ -31,6 +31,7 @@ define([
     self.href = data.href;
 
     self.style = data.style || {};
+    self.ext_style = data.ext_style || {};
     self.effect = data.effect || {};
 
     self.text= data.text;

@@ -54,6 +54,7 @@ function walk_layers ( root, handle, root_path ) {
 
 
 var actual_doc = docRef.duplicate();
+app.activeDocument = actual_doc;
 
 var start = new Date().getTime();
 
@@ -77,6 +78,7 @@ walk_layers(actual_doc, function( layer, is_group, is_root, root_path ) {
   //
   var layer_node = layer_name_map[ item_path ] = {
     style : {},
+    ext_style : {},
     effect : {
       'align-horizontal' : 'left',
       'align-vertical'   : 'top'
@@ -121,17 +123,13 @@ walk_layers(actual_doc, function( layer, is_group, is_root, root_path ) {
 });
 
 
-function unit_as_px( unit_value ) {
-  var ret = '';
-  unit_value.convert("px");
-  return unit_value.value;
-}
 
 function layer_name_to_class_name( str ){
   return str.replace(/ /g, '-')
           .replace(/(^[0-9])/, '__$1')
           .replace(/^([^#.])/, '.$1');
 }
+
 
 function layer_attr_to_style ( layer, layer_node, item_path ) {
   /*
@@ -145,14 +143,7 @@ function layer_attr_to_style ( layer, layer_node, item_path ) {
 
   var bounds = layer.bounds;
 
-  css_style.left = unit_as_px(bounds[0]);
-  css_style.top = unit_as_px(bounds[1]);
-  css_style.right = unit_as_px(bounds[2]);
-  css_style.bottom = unit_as_px(bounds[3]);
-
-
-  css_style.width = css_style.right - css_style.left;
-  css_style.height = css_style.bottom - css_style.top;
+  bounds_to_bbox(bounds, css_style);
 
   // 
   // need create file_path here
@@ -168,55 +159,56 @@ function layer_attr_to_style ( layer, layer_node, item_path ) {
 
 
 function saveFile(  fileNameBody, exportInfo ) {
-  var id6 = charIDToTypeID( "Expr" );
+  var id6 = c2t( "Expr" );
     var desc3 = new ActionDescriptor();
-    var id7 = charIDToTypeID( "Usng" );
+    var id7 = c2t( "Usng" );
       var desc4 = new ActionDescriptor();
-      var id8 = charIDToTypeID( "Op  " );
-      var id9 = charIDToTypeID( "SWOp" );
-      var id10 = charIDToTypeID( "OpSa" );
+      var id8 = c2t( "Op  " );
+      var id9 = c2t( "SWOp" );
+      var id10 = c2t( "OpSa" );
           desc4.putEnumerated( id8, id9, id10 );
-      var id11 = charIDToTypeID( "Fmt " );
-      var id12 = charIDToTypeID( "IRFm" );
-      var id13 = charIDToTypeID( "PN24" );
+      var id11 = c2t( "Fmt " );
+      var id12 = c2t( "IRFm" );
+      var id13 = c2t( "PN24" );
       desc4.putEnumerated( id11, id12, id13 );
-      var id14 = charIDToTypeID( "Intr" );
+      var id14 = c2t( "Intr" );
       desc4.putBoolean( id14, false );
-      var id15 = charIDToTypeID( "Trns" );
+      var id15 = c2t( "Trns" );
       desc4.putBoolean( id15, true );
-      var id16 = charIDToTypeID( "Mtt " );
+      var id16 = c2t( "Mtt " );
       desc4.putBoolean( id16, true );
-      var id17 = charIDToTypeID( "MttR" );
+      var id17 = c2t( "MttR" );
       desc4.putInteger( id17, 255 );
-      var id18 = charIDToTypeID( "MttG" );
+      var id18 = c2t( "MttG" );
       desc4.putInteger( id18, 255 );
-      var id19 = charIDToTypeID( "MttB" );
+      var id19 = c2t( "MttB" );
       desc4.putInteger( id19, 255 );
-      var id20 = charIDToTypeID( "SHTM" );
+      var id20 = c2t( "SHTM" );
       desc4.putBoolean( id20, false );
-      var id21 = charIDToTypeID( "SImg" );
+      var id21 = c2t( "SImg" );
       desc4.putBoolean( id21, true );
-      var id22 = charIDToTypeID( "SSSO" );
+      var id22 = c2t( "SSSO" );
       desc4.putBoolean( id22, false );
-      var id23 = charIDToTypeID( "SSLt" );
+      var id23 = c2t( "SSLt" );
         var list1 = new ActionList();
       desc4.putList( id23, list1 );
-      var id24 = charIDToTypeID( "DIDr" );
+      var id24 = c2t( "DIDr" );
       desc4.putBoolean( id24, false );
-      var id25 = charIDToTypeID( "In  " );
+      var id25 = c2t( "In  " );
       desc4.putPath( id25, new File( fileNameBody ) );
-    var id26 = stringIDToTypeID( "SaveForWeb" );
+    var id26 = s2t( "SaveForWeb" );
     desc3.putObject( id7, id26, desc4 );
   executeAction( id6, desc3, DialogModes.NO );
 }
-
-
 
 
 function do_exports () {
   var layer;
   var copyed_doc;
   var n = layers.length;
+
+  app.activeDocument = actual_doc;
+
   for(var i = 0; i < n; i++){
     layer = layers[i];
     // 
@@ -224,24 +216,35 @@ function do_exports () {
     // 
     layer.layer.visible = true;
 
-    copyed_doc= actual_doc.duplicate();
-    copyed_doc.trim(TrimType.TRANSPARENT);
+    if( if_exports_image ){
+      copyed_doc= actual_doc.duplicate();
+      copyed_doc.trim(TrimType.TRANSPARENT);
 
-    app.activeDocument = copyed_doc;
-    saveFile( layer.src, exportInfo);
+      app.activeDocument = copyed_doc;
 
-    copyed_doc.close( SaveOptions.DONOTSAVECHANGES );
-    copyed_doc = null;
+      saveFile( layer.src, exportInfo);
+
+      copyed_doc.close( SaveOptions.DONOTSAVECHANGES );
+      copyed_doc = null;
+
+      app.activeDocument = actual_doc;
+    }
+
+    actual_doc.activeLayer = layer.layer;
+    if( get_layer_effect_visible() ){
+      hide_layer_effects();
+
+      bounds_to_bbox( layer.layer.bounds, layer.ext_style );
+    }
+
     // do save
     layer.layer.visible = false;
     layer.layer = null;
   }
+
 }
 
-
-if( if_exports_image ){
-  do_exports();
-}
+do_exports();
 
 // free the reference
 layers.length = 0;
@@ -254,4 +257,4 @@ save_json( exportInfo.destination + '/layer_name_map.json', layer_name_map);
 
 var end = new Date().getTime();
 
-// $.writeln( 'process end with ' + ( end - start ) + 'ms');
+$.writeln( 'process end with ' + ( end - start ) + 'ms');
