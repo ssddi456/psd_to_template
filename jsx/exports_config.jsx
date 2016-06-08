@@ -46,14 +46,21 @@ function config_ui () {
   grpSecondLine.alignChildren = 'center';
 
   var grpThirdLine = grpTopLeft.add("group");
-  grpSecondLine.orientation = 'row';
-  grpSecondLine.alignChildren = 'center';
+  grpThirdLine.orientation = 'row';
+  grpThirdLine.alignChildren = 'center';
+
+  var grpFourthLine = grpTopLeft.add("group");
+  grpFourthLine.orientation = 'row';
+  grpFourthLine.alignChildren = 'center';
 
   var etDestination = grpSecondLine.add("edittext", undefined, 'd:/temp');
   etDestination.preferredSize.width = 160;
 
   var chbAutoMerge = grpThirdLine.add('checkbox', undefined, '自动合并图层');
   chbAutoMerge.value = false;
+
+  var chbExportImage = grpFourthLine.add('checkbox', undefined, '导出图片资源');
+  chbExportImage.value = true;
 
   var btnBrowse = grpSecondLine.add("button", undefined, '浏览');
   var btnRun    = grpTopRight.add("button", undefined, '导出');
@@ -86,12 +93,18 @@ function config_ui () {
     grpTop = null;
     grpTopLeft = null;
     grpTopRight = null;
-    grpThirdLine = null;
+    
     grpSecondLine = null;
+    grpThirdLine = null;
+    chbAutoMerge = null;
+
     etDestination = null;
     btnBrowse = null;
     btnRun = null;
     btnCancel = null;
+
+    grpFourthLine = null;
+    chbExportImage = null;
   }
 
   if( result == cancelButtonID ){
@@ -102,24 +115,11 @@ function config_ui () {
   } else {
 
     exportsInfo.destination = etDestination.text;
-    exportsInfo.bauto_merge = chbAutoMerge.value;
+    exportsInfo.auto_merge = chbAutoMerge.value;
+    exportsInfo.if_exports_image = chbExportImage.value;
     clearup();
 
     return exportsInfo;
   }
 
 }
-
-
-
-var start = new Date().getTime();
-var ret = config_ui();
-if( ret != cancelButtonID ){
-  // do exports here
-  // so how can we get a progress bar?
-}
-
-var end = new Date().getTime();
-
-$.writeln( obj2str(ret) );
-$.writeln('process : ' + (end - start) + ' ms');

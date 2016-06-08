@@ -9,6 +9,8 @@
 #include './json.jsx'
 #include './text_font.jsx'
 #include './utils.jsx'
+#include './exports_config.jsx'
+#include './ui_util.js'
 
 // debug level: 0-2 (0:disable, 1:break on error, 2:break at beginning)
 $.level = 1;
@@ -18,111 +20,92 @@ var docRef = app.activeDocument;
 
 // configs 
 var exportInfo = { destination : 'D:/temp' };
-var if_exports_image = true;
-
-
-function walk_layers ( root, handle, root_path ) {
-  if( root_path !== undefined ){
-    root_path += '_' + root.name;
-  } else {
-    root_path = 'root';
-    handle( root, true, true, '');
-  }
-
-
-  var layer_count = root.layers.length;
-  var artLayer_count = root.artLayers.length;
-  var layerSet_count = root.layerSets.length;
-
-  if( (artLayer_count + layerSet_count) != layer_count ){
-    //  $.writeln(root_path);
-  }
-
-  for( var i = 0; i< layer_count; i++ ){
-    var child = root.layers[i];
-    var typename = child.typename;
-    if( typename == 'ArtLayer' ){
-      handle(child, false, false, root_path);
-    } else if( typename == 'LayerSet' ){
-      var ret = handle(child, true, false,root_path);
-      if( ret !== false ){
-        walk_layers(child, handle, root_path);
-      }
-    }
-  }
-}
 
 
 var actual_doc = docRef.duplicate();
 app.activeDocument = actual_doc;
 
-var start = new Date().getTime();
+
 
 var layers = [];
 var layer_name_map = {};
 
-var layer_index = 0;
-walk_layers(actual_doc, function( layer, is_group, is_root, root_path ) {
-  if( !is_root ){
-    var item_path = root_path + '_' + layer.name;
-  } else {
-    item_path = 'root';
-  }
 
-  if( layer_name_map[ item_path ] ){
-    // 这里应该有个同名冲突的解决机制
-  }
-
-  // 
-  // 在这里构建元素树结构
-  //
-  var layer_node = layer_name_map[ item_path ] = {
-    style : {},
-    ext_style : {},
-    effect : {
-      'align-horizontal' : 'left',
-      'align-vertical'   : 'top'
-    },
-    children : [],
-    parent : root_path,
-    is_group : is_group,
-    class_name : layer_name_to_class_name(layer.name),
-    index  : layer_index
-  };
-  layer_index ++;
-
-  // documents width and height
-  if( is_root ){
-    layer_node.style.height = unit_as_px(layer.height);
-    layer_node.style.width = unit_as_px(layer.width);
-  }
-
-  layer_name_map[ root_path ] && layer_name_map[ root_path ].children.push( item_path );
-
-  if( is_group ){
-    if( !layer.visible ){
-      return false;
+function get_layer_styles ( progress ) {
+  var layer_index = 0;
+  walk_though_layers(actual_doc, function( layer, is_group, is_root, root_path ) {
+    if( !is_root ){
+      var item_path = root_path + '_' + layer.name;
+    } else {
+      item_path = 'root';
     }
 
-    layer_node.effect.child_pos_type = 'absolute';
+    if( layer_name_map[ item_path ] ){
+      // 这里应该有个同名冲突的解决机制
+    }
 
-  } else {
-    if( layer.visible ){
-      layer.visible = false; 
-      if( if_exports_image ){
-        layer_node.layer = layer;
+    // 
+    // 在这里构建元素树结构
+    //
+    var layer_node = layer_name_map[ item_path ] = {
+      style : {},
+      ext_style : {},
+      effect : {
+        'align-horizontal' : 'left',
+        'align-vertical'   : 'top'
+      },
+      children : [],
+      parent : root_path,
+      is_group : is_group,
+      class_name : layer_name_to_class_name(layer.name),
+      index  : layer_index
+    };
+    layer_index ++;
+
+    // documents width and height
+    if( is_root ){
+      layer_node.style.height = unit_as_px(layer.height);
+      layer_node.style.width = unit_as_px(layer.width);
+    }
+
+    layer_name_map[ root_path ] && layer_name_map[ root_path ].children.push( item_path );
+
+    progress.increase();
+
+    if( is_group ){
+      if( !layer.visible ){
+        return false;
       }
-      layers.push( layer_node );
 
-      layer_node.src = exportInfo.destination + '/' + item_path  + '.png';
-      layer_node.src = layer_node.src.replace(/ /g,'-');
-      layer_attr_to_style( layer, layer_node, item_path );
+      layer_node.effect.child_pos_type = 'absolute';
+
+    } else {
+      if( layer.visible ){
+        layer.visible = false; 
+        if( exportInfo.if_exports_image ){
+          layer_node.layer = layer;
+        }
+        layers.push( layer_node );
+
+        layer_node.src = exportInfo.destination + '/' + item_path  + '.png';
+        layer_node.src = layer_node.src.replace(/ /g,'-');
+        layer_attr_to_style( layer, layer_node, item_path );
+      }
     }
-  }
+  });
+}
 
-});
+function count_layers () {
+    var count = 0;
+    walk_though_layers(actual_doc, function( layer, is_group, is_root, root_path ) {
+        count ++;
+    });
+    return count;
+}
 
-
+function auto_merge_layers() {
+    
+}
 
 function layer_name_to_class_name( str ){
   return str.replace(/ /g, '-')
@@ -205,10 +188,39 @@ function saveFile(  fileNameBody, exportInfo ) {
 function do_exports () {
   var layer;
   var copyed_doc;
-  var n = layers.length;
+
+  var progress = ui_progress( 2 );
+
+  if( exportInfo.auto_merge ){
+    progress.stat('合并图层');
+    auto_merge_layers();
+    progress.increase();
+  }
+
+  progress.stat('准备开始...');
+  progress.update(2);
+
+  var layer_count = count_layers();
+  progress.finish();
+
+  var steps = layer_count + 1;
+  if( exportInfo.if_exports_image ){
+    steps += layer_count;
+  }
+
+  var progress = ui_progress( layer_count );
+
+  progress.stat('收集样式 - 阶段1/3');
+  get_layer_styles( progress );
+  progress.finish();
+  
 
   app.activeDocument = actual_doc;
 
+  var progress = ui_progress( 2 );
+  progress.stat('收集样式 - 阶段2/3');
+
+  var n = layers.length;
   for(var i = 0; i < n; i++){
     layer = layers[i];
     // 
@@ -216,7 +228,7 @@ function do_exports () {
     // 
     layer.layer.visible = true;
 
-    if( if_exports_image ){
+    if( exportInfo.if_exports_image ){
       copyed_doc= actual_doc.duplicate();
       copyed_doc.trim(TrimType.TRANSPARENT);
 
@@ -231,10 +243,12 @@ function do_exports () {
     }
 
     actual_doc.activeLayer = layer.layer;
-    if( get_layer_effect_visible() ){
-      hide_layer_effects();
+    if( layer.text ){
+      if(  get_layer_effect_visible() ){
+        hide_layer_effects();
 
-      bounds_to_bbox( layer.layer.bounds, layer.ext_style );
+        bounds_to_bbox( layer.layer.bounds, layer.ext_style );
+      }
     }
 
     // do save
@@ -242,19 +256,30 @@ function do_exports () {
     layer.layer = null;
   }
 
+  progress.increase();
+
+  layers.length = 0;
+
+  app.activeDocument = docRef;
+  actual_doc.close( SaveOptions.DONOTSAVECHANGES );
+  actual_doc = null
+
+  progress.stat('存储资源表 - 阶段3/3');
+
+  save_json( exportInfo.destination + '/layer_name_map.json', layer_name_map);
+
+  progress.finish();
 }
 
-do_exports();
 
-// free the reference
-layers.length = 0;
 
-app.activeDocument = docRef;
-actual_doc.close( SaveOptions.DONOTSAVECHANGES );
-actual_doc = null
 
-save_json( exportInfo.destination + '/layer_name_map.json', layer_name_map);
+var result = config_ui();
+if( result != cancelButtonID ){
+  exportInfo = result;
+  var start = new Date().getTime();
+  do_exports();
+  var end = new Date().getTime();
+}
 
-var end = new Date().getTime();
-
-$.writeln( 'process end with ' + ( end - start ) + 'ms');
+ui_info('导出完成', '消耗 ' + ( end - start ) + 'ms');

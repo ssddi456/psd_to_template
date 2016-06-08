@@ -94,3 +94,35 @@ function bounds_to_bbox( bounds, exports ) {
 
   return exports;
 }
+
+
+function walk_though_layers ( root, handle, root_path ) {
+  if( root_path !== undefined ){
+    root_path += '_' + root.name;
+  } else {
+    root_path = 'root';
+    handle( root, true, true, '');
+  }
+
+
+  var layer_count = root.layers.length;
+  var artLayer_count = root.artLayers.length;
+  var layerSet_count = root.layerSets.length;
+
+  if( (artLayer_count + layerSet_count) != layer_count ){
+    //  $.writeln(root_path);
+  }
+
+  for( var i = 0; i< layer_count; i++ ){
+    var child = root.layers[i];
+    var typename = child.typename;
+    if( typename == 'ArtLayer' ){
+      handle(child, false, false, root_path);
+    } else if( typename == 'LayerSet' ){
+      var ret = handle(child, true, false,root_path);
+      if( ret !== false ){
+        walk_though_layers(child, handle, root_path);
+      }
+    }
+  }
+}
