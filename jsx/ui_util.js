@@ -44,7 +44,10 @@ function ui_progress( max ) {
 
 
 function ui_info ( title, text ) {
-  var win = new Window("window", title);
+  var win = new Window("dialog", title);
   win.add('statictext', undefined, text);
+
+  win.onClose = function() {};
+
   win.show();
 }

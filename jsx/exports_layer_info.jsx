@@ -82,9 +82,8 @@ function get_layer_styles ( progress ) {
     } else {
       if( layer.visible ){
         layer.visible = false; 
-        if( exportInfo.if_exports_image ){
-          layer_node.layer = layer;
-        }
+        layer_node.layer = layer;
+
         layers.push( layer_node );
 
         layer_node.src = exportInfo.destination + '/' + item_path  + '.png';
@@ -217,10 +216,11 @@ function do_exports () {
 
   app.activeDocument = actual_doc;
 
-  var progress = ui_progress( 2 );
+  var n = layers.length;
+
+  var progress = ui_progress( n + 1 );
   progress.stat('收集样式 - 阶段2/3');
 
-  var n = layers.length;
   for(var i = 0; i < n; i++){
     layer = layers[i];
     // 
@@ -229,6 +229,7 @@ function do_exports () {
     layer.layer.visible = true;
 
     if( exportInfo.if_exports_image ){
+      // 如果这里使用复制单一图层到新建的文档 也许会快一点？
       copyed_doc= actual_doc.duplicate();
       copyed_doc.trim(TrimType.TRANSPARENT);
 
@@ -254,9 +255,8 @@ function do_exports () {
     // do save
     layer.layer.visible = false;
     layer.layer = null;
+    progress.increase();
   }
-
-  progress.increase();
 
   layers.length = 0;
 
@@ -271,15 +271,12 @@ function do_exports () {
   progress.finish();
 }
 
-
-
-
 var result = config_ui();
+var start = new Date().getTime();
 if( result != cancelButtonID ){
   exportInfo = result;
-  var start = new Date().getTime();
   do_exports();
-  var end = new Date().getTime();
 }
+var end = new Date().getTime();
 
 ui_info('导出完成', '消耗 ' + ( end - start ) + 'ms');
