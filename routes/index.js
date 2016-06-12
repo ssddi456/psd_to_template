@@ -1,3 +1,4 @@
+var fs = require('fs');
 var path    = require('path');
 var debug_name = path.basename(__filename,'.js');
 if( debug_name == 'index'){
@@ -6,6 +7,7 @@ if( debug_name == 'index'){
 (require.main === module) && (function(){
     process.env.DEBUG = '*';
 })()
+
 var debug = require('debug')(debug_name);
 var _ = require('underscore');
 
@@ -32,15 +34,19 @@ var fsExtra = require('fs-extra');
 var async = require('async');
 
 
-// var watch_pathes = [ route_relative('public'), route_relative('views') ];
+
 var fisKernel = require('fis-kernel');
+
+var psd_tree = require('../implements/psd_tree');
+
+
 
 var watch_pathes = [ 
   'D:\\temp',
   'D:\\gitchunk\\psd_to_template\\views'
 ];
 
-var dest_pathes = [ path.normalize(fisKernel.project.getTempPath('www')) ];
+
 
 var visitable_map = [
   '.jpg',
@@ -55,7 +61,6 @@ var visitable_map = [
 
 var href_map = {};
 
-var psd_tree = tree_with_patch( path.join( watch_pathes[0], 'layer_name_map.json' ) );
 
 router.get('/tree',function(req, resp, next) {
   var type = req.query.type;
@@ -68,7 +73,8 @@ router.get('/tree',function(req, resp, next) {
     resp.json({ 
       err : 0, 
       items : tree,
-      roots: ['root']
+      roots: ['root'],
+      res_root: psd_tree.get_res_root()
     });
 
   });
@@ -97,9 +103,9 @@ router.get('/node_preview', function( req, resp, next ) {
       nodes : nodes
     });
   });
-
 });
 
+// fs proxy
 router.get('/node_source', function( req, resp, next ) {
   var node_path = req.query.node_path;
 
@@ -186,80 +192,61 @@ router.get('/recompile', function( req, resp, next ) {
   })
 });
 
+
+
 var child_process = require('child_process');
 
 function compile ( done ) {
   done && done();
-
-  // async.each(watch_pathes,function( path, done ) {
-  //   var cp = child_process.spawn('fis.cmd', ['release'], { cwd : path });
-  //   cp.on('error',function( e ) {
-  //     if(e){
-  //       debug(e);
-  //     }
-  //   });
-
-  //   cp.on('exit', function( code ) {
-  //     done && done( code );
-  //   });
-  // }, done);
 }
 
 compile();
 
-var watchr = require('watchr');
-watchr.watch({
-    paths: watch_pathes,
-    listeners: {
-        log: function(logLevel){
-          if( logLevel =='debug' ){
-            return;
-          }
-          debug('a log message occured:', arguments);
-        },
-        error: function(err){
-            debug('an error occured:', err);
-        },
-        watching: function(err,watcherInstance,isWatching){
-            if (err) {
-                debug("watching the path " + watcherInstance.path + " failed with error", err);
-            } else {
-                debug("watching the path " + watcherInstance.path + " completed");
-            }
-        },
-        change: function(changeType, filePath, fileCurrentStat, filePreviousStat){
-          debug('a change event occured:', changeType, filePath);
+var watcher = require('../implements/watcher');
 
-          compile(function() {
-            // here need some tree updates
-            if( changeType == 'update' ){
-              if( filePath.indexOf( view_root ) == 0 ){
-                debug('template change ');
-                reload( filePath );
-              } else {
-                debug('static file change');
-                reload( '/' + path.relative(static_root, filePath).replace(/\\/g, '/') );
-              }
-            }
-          });
-        }
-    },
-    next: function(err,watchers){
-        if (err) {
-            return debug("watching everything failed with error", err);
-        } else {
-            debug('watching everything completed');
-        }
+var _watcher = watcher(watch_pathes);
+_watcher.on('change', function( data ) {
+  var changeType  = data.changeType;
+  var filePath  = data.filePath;
+  var fileCurrentStat  = data.fileCurrentStat;
+  var filePreviousStat  = data.filePreviousStat;
 
-        // Close watchers after 60 seconds example
-        // setTimeout(function(){
-        //     var i;
-        //     debug('Stop watching our paths');
-        //     for ( i=0;  i<watchers.length; i++ ) {
-        //         watchers[i].close();
-        //     }
-        // },60*1000);
+  // compile(function() {
+  //   // here need some tree updates
+  //   if( changeType == 'update' ){
+  //     if( filePath.indexOf( view_root ) == 0 ){
+  //       debug('template change ');
+  //       reload( filePath );
+  //     } else {
+  //       debug('static file change');
+  //       reload( '/' + path.relative(static_root, filePath).replace(/\\/g, '/') );
+  //     }
+  //   }
+  // });
+});
+
+
+router.post('/change_res_root', function( req, resp, next ) {
+  // check if the new root is legal
+  var root = req.body.root;
+  try{
+    var stat = fs.statSync(root);
+    if( stat && stat.isDirectory() ){
+
+    } else {
+      throw new Error('given root is not a directory');
     }
+
+    psd_tree.change_res_root( root );
+
+  } catch(e){
+    return next(e);
+  }
+
+  resp.json({
+    err : 0
+  });
+
 });
 
 //

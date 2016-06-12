@@ -21,11 +21,11 @@ var docRef = app.activeDocument;
 // configs 
 var exportInfo = { destination : 'D:/temp' };
 
-
-var actual_doc = docRef.duplicate();
-app.activeDocument = actual_doc;
-
-
+// 
+// 制造一个副本 省去管理历史状态的麻烦，
+// 并且可以提升执行速度
+// 
+var actual_doc;
 
 var layers = [];
 var layer_name_map = {};
@@ -86,7 +86,8 @@ function get_layer_styles ( progress ) {
 
         layers.push( layer_node );
 
-        layer_node.src = exportInfo.destination + '/' + item_path  + '.png';
+        layer_node.relative_src = './sources/' + item_path  + '.png';
+        layer_node.src = exportInfo.destination + '/sources/' + item_path  + '.png';
         layer_node.src = layer_node.src.replace(/ /g,'-');
         layer_attr_to_style( layer, layer_node, item_path );
       }
@@ -261,8 +262,6 @@ function do_exports () {
   layers.length = 0;
 
   app.activeDocument = docRef;
-  actual_doc.close( SaveOptions.DONOTSAVECHANGES );
-  actual_doc = null
 
   progress.stat('存储资源表 - 阶段3/3');
 
@@ -272,11 +271,29 @@ function do_exports () {
 }
 
 var result = config_ui();
-var start = new Date().getTime();
 if( result != cancelButtonID ){
+  var start = new Date().getTime();
   exportInfo = result;
-  do_exports();
-}
-var end = new Date().getTime();
 
-ui_info('导出完成', '消耗 ' + ( end - start ) + 'ms');
+  var actual_doc = docRef.duplicate();
+  app.activeDocument = actual_doc;
+
+  var folder = new Folder(exportInfo.destination );
+  if (!folder.exists) {
+    folder.create();
+  }
+
+  var folder = new Folder(exportInfo.destination + '/sources');
+  if (!folder.exists) {
+    folder.create();
+  }
+
+  do_exports();
+
+  actual_doc.close( SaveOptions.DONOTSAVECHANGES );
+  actual_doc = null
+
+  var end = new Date().getTime();
+  ui_info('导出完成', '消耗 ' + ( end - start ) + 'ms');
+}
+

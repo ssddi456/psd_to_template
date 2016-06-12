@@ -6,7 +6,7 @@ var type_to_str_map = {};
 function chr_to_type ( str ) {
   return chr_to_type_map[str] 
           ? chr_to_type_map[str] 
-          : (chr_to_type_map[str] = charIDToTypeID(str));
+          : (chr_to_type_map[str] =  charIDToTypeID(str));
 }
 
 function str_to_type( str ) {
@@ -124,5 +124,122 @@ function walk_though_layers ( root, handle, root_path ) {
         walk_though_layers(child, handle, root_path);
       }
     }
+  }
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Function: objectToDescriptor
+// Usage: create an ActionDescriptor from a JavaScript Object
+// Input: JavaScript Object (o)
+//        object unique string (s)
+//        Pre process converter (f)
+// Return: ActionDescriptor
+// NOTE: Only boolean, string, number and UnitValue are supported, use a pre processor
+//       to convert (f) other types to one of these forms.
+// REUSE: This routine is used in other scripts. Please update those if you 
+//        modify. I am not using include or eval statements as I want these 
+//        scripts self contained.
+///////////////////////////////////////////////////////////////////////////////
+function objectToDescriptor (o, s, f) {
+  if (undefined != f) {
+    o = f(o);
+  }
+  var d = new ActionDescriptor;
+  var l = o.reflect.properties.length;
+  d.putString( chr_to_type( 'Msge' ), s );
+  for (var i = 0; i < l; i++ ) {
+    var k = o.reflect.properties[i].toString();
+    if (k == "__proto__" || k == "__count__" || k == "__class__" || k == "reflect")
+      continue;
+    var v = o[ k ];
+    k = str_to_type(k);
+    switch ( typeof(v) ) {
+      case "boolean":
+        d.putBoolean(k, v);
+        break;
+      case "string":
+        d.putString(k, v);
+        break;
+      case "number":
+        d.putDouble(k, v);
+        break;
+      default:
+      {
+        if ( v instanceof UnitValue ) {
+          var uc = new Object;
+          uc["px"] =  chr_to_type("#Rlt"); // unitDistance
+          uc["%"] =  chr_to_type("#Prc"); // unitPercent
+          d.putUnitDouble(k, uc[v.type], v.value);
+        } else {
+          throw( new Error("Unsupported type in objectToDescriptor " + typeof(v) ) );
+        }
+      }
+    }
+  }
+    return d;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Function: descriptorToObject
+// Usage: update a JavaScript Object from an ActionDescriptor
+// Input: JavaScript Object (o), current object to update (output)
+//        Photoshop ActionDescriptor (d), descriptor to pull new params for object from
+//        object unique string (s)
+//        JavaScript Function (f), post process converter utility to convert
+// Return: Nothing, update is applied to passed in JavaScript Object (o)
+// NOTE: Only boolean, string, number and UnitValue are supported, use a post processor
+//       to convert (f) other types to one of these forms.
+// REUSE: This routine is used in other scripts. Please update those if you 
+//        modify. I am not using include or eval statements as I want these 
+//        scripts self contained.
+///////////////////////////////////////////////////////////////////////////////
+function descriptorToObject (o, d, s, f) {
+  var l = d.count;
+  if (l) {
+      var keyMessage = chr_to_type( 'Msge' );
+        if ( d.hasKey(keyMessage) && ( s != d.getString(keyMessage) )) return;
+  }
+  for (var i = 0; i < l; i++ ) {
+    var k = d.getKey(i); // i + 1 ?
+    var t = d.getType(k);
+    strk = type_to_str(k);
+    switch (t) {
+      case DescValueType.BOOLEANTYPE:
+        o[strk] = d.getBoolean(k);
+        break;
+      case DescValueType.STRINGTYPE:
+        o[strk] = d.getString(k);
+        break;
+      case DescValueType.DOUBLETYPE:
+        o[strk] = d.getDouble(k);
+        break;
+      case DescValueType.UNITDOUBLE:
+        {
+        var uc = new Object;
+        uc[ chr_to_type("#Rlt")] = "px"; // unitDistance
+        uc[ chr_to_type("#Prc")] = "%"; // unitPercent
+        uc[ chr_to_type("#Pxl")] = "px"; // unitPixels
+        var ut = d.getUnitDoubleType(k);
+        var uv = d.getUnitDoubleValue(k);
+        o[strk] = new UnitValue( uv, uc[ut] );
+        }
+        break;
+      case DescValueType.INTEGERTYPE:
+      case DescValueType.ALIASTYPE:
+      case DescValueType.CLASSTYPE:
+      case DescValueType.ENUMERATEDTYPE:
+      case DescValueType.LISTTYPE:
+      case DescValueType.OBJECTTYPE:
+      case DescValueType.RAWTYPE:
+      case DescValueType.REFERENCETYPE:
+      default:
+        throw( new Error("Unsupported type in descriptorToObject " + t ) );
+    }
+  }
+  if (undefined != f) {
+    o = f(o);
   }
 }

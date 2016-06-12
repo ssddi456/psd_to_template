@@ -62,32 +62,33 @@ define([
     }
   };
   
-  var tab = function( data ) {
-    this.name = ko.observable(data.name);
-    this.selected = ko.observable(!!data.selected);
-  };
+
 
   var vm = {
     treeData : ko.observable(),
     node_detail_url : '/node_source',
     active_tab_name : 'source',
-    tabs : ko.observableArray([new tab({ name : 'source', selected : true }), new tab({ name : 'dest'})]),
-    select: function( _vm ) {
-      if( _vm.selected() ){
-        return;
-      }
 
-      sync_file_tree(_vm.name());
-
-      vm.node_detail_url = '/node_' + _vm.name();
-      vm.active_tab_name = _vm.name();
-
-      vm.tabs().forEach(function( _vm ) {
-        _vm.selected( false );
+    res_root : ko.observable(''),
+    temp_res_root : ko.observable(''),
+    save_res_root_failed : ko.observable(''),
+    change_res_root: function( vm, e ) {
+      e.stopPropagation();
+      $('#change_res_root_modal').modal();
+    },
+    save_res_root: function( vm, e ) {
+      $.post('/change_res_root', {
+        root : vm.temp_res_root()
+      }, function( res ) {
+        if( !res.err ){
+          setTimeout(function() {
+            location.reload();
+          }, 1e3);
+        } else {
+          save_res_root_failed(data.message);
+        }
       });
-
-      _vm.selected(true); 
-    }
+    },
   };
 
   function file_arr_to_file_tree( nodes ) {
@@ -111,6 +112,9 @@ define([
   var sync_file_tree = _.debounce(function( type ) {
     $.getJSON('/tree?type=' + type, function( data ) {
       var node_map = file_arr_to_file_tree( data.items );
+
+      vm.res_root(data.res_root);
+      vm.temp_res_root(data.res_root);
 
       vm.treeData(
         new NodeModel({ 

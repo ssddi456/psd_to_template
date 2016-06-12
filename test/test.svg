@@ -1,0 +1,148 @@
+<svg 
+  version="0.1" 
+  xmlns="http://www.w3.org/2000/svg" 
+  xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <style>
+    text{
+      text-anchor:middle;
+    }
+
+    .__7, .__7-副本{
+      font-family:Cooper Std Black;
+      fill:#ffffff;
+      font-size:2.5rem;
+      text-shadow:0 0 6px black, 0 0 6px black, 0 0 6px black;
+    }
+  </style>
+
+<g class="cardtemplate-副本">
+  <g class="potion-green">
+    <image class="图层-1" 
+      x="354" y="123" 
+      width="88" height="114" 
+      xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-green_图层-1.png"     ></image>
+    <image class="RancidGasPotion" 
+      x="355" y="126" 
+      width="83" height="103" 
+      xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-green_RancidGasPotion.png"     ></image>
+    <g class="组-1">
+      <image class="图层-2-副本" 
+        x="412" y="203" 
+        width="39" height="40" 
+        xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-green_组-1_图层-2-副本.png"       ></image>
+      <text class="__7-副本" 
+        x="433" y="238" 
+        text-anchor="middle"         width="24" height="31">
+        <tspan>7</tspan>
+      </text>
+    </g>
+    <g class="组-2">
+      <image class="图层-2" 
+        x="347" y="115" 
+        width="39" height="40" 
+        xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-green_组-2_图层-2.png"       ></image>
+      <text class="__7" 
+        x="365.5" y="151" 
+        text-anchor="middle"         width="25" height="31">
+        <tspan>7</tspan>
+      </text>
+    </g>
+  </g>
+  <g class="potion-purple">
+    <image class="图层-1" 
+      x="243" y="123" 
+      width="88" height="114" 
+      xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-purple_图层-1.png"     ></image>
+    <image class="FullRejuvination" 
+      x="240" y="128" 
+      width="95" height="99" 
+      xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-purple_FullRejuvination.png"     ></image>
+    <g class="组-1">
+      <image class="图层-2-副本" 
+        x="301" y="203" 
+        width="39" height="40" 
+        xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-purple_组-1_图层-2-副本.png"       ></image>
+      <text class="__7-副本" 
+        x="322" y="238" 
+        text-anchor="middle"         width="24" height="31">
+        <tspan>7</tspan>
+      </text>
+    </g>
+    <g class="组-2">
+      <image class="图层-2" 
+        x="236" y="115" 
+        width="39" height="40" 
+        xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-purple_组-2_图层-2.png"       ></image>
+      <text class="__7" 
+        x="254.5" y="151" 
+        text-anchor="middle"         width="25" height="31">
+        <tspan>7</tspan>
+      </text>
+    </g>
+  </g>
+  <g class="potion-blue">
+    <image class="图层-1" 
+      x="133" y="123" 
+      width="88" height="114" 
+      xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-blue_图层-1.png"     ></image>
+    <image class="Diablo_I_full_mana_potion" 
+      x="133" y="125" 
+      width="89" height="105" 
+      xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-blue_Diablo_I_full_mana_potion.png"     ></image>
+    <g class="组-1">
+      <image class="图层-2-副本" 
+        x="191" y="203" 
+        width="39" height="40" 
+        xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-blue_组-1_图层-2-副本.png"       ></image>
+      <text class="__7-副本" 
+        x="212" y="238" 
+        text-anchor="middle"         width="24" height="31">
+        <tspan>7</tspan>
+      </text>
+    </g>
+    <g class="组-2">
+      <image class="图层-2" 
+        x="126" y="115" 
+        width="39" height="40" 
+        xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-blue_组-2_图层-2.png"       ></image>
+      <text class="__7" 
+        x="144.5" y="151" 
+        text-anchor="middle"         width="25" height="31">
+        <tspan>7</tspan>
+      </text>
+    </g>
+  </g>
+  <g class="potion-red">
+    <image class="图层-1" 
+      x="22" y="123" 
+      width="88" height="114" 
+      xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-red_图层-1.png"     ></image>
+    <image class="Diablo_I_full_health_potion" 
+      x="27" y="127" 
+      width="85" height="100" 
+      xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-red_Diablo_I_full_health_potion.png"     ></image>
+    <g class="组-1">
+      <image class="图层-2-副本" 
+        x="80" y="203" 
+        width="39" height="40" 
+        xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-red_组-1_图层-2-副本.png"       ></image>
+      <text class="__7-副本" 
+        x="101" y="238" 
+        text-anchor="middle"         width="24" height="31">
+        <tspan>7</tspan>
+      </text>
+    </g>
+    <g class="组-2">
+      <image class="图层-2" 
+        x="15" y="115" 
+        width="39" height="40" 
+        xlink:href="http://localhost:3005/node_source?node_path=D:/temp/root_potion-red_组-2_图层-2.png"       ></image>
+      <text class="__7" 
+        x="33.5" y="151" 
+        text-anchor="middle"         width="25" height="31">
+        <tspan>7</tspan>
+      </text>
+    </g>
+  </g>
+</g>
+</svg>

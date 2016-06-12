@@ -7,9 +7,33 @@ $.level = 1;
 var runButtonId = 1;
 var cancelButtonID = 2;
 
+var option_storage_desc = 'exports_layer_info';
+var config_key = str_to_type("exports_settings");
+
+
+// "d69fc733-75b4-4d5c-ae8a-c6d6f9a8aa32"
+// 'xxxxxxyx-xyxx-4xxx-yxxx-xxxxxxxxxxyy'.replace(/[xy]/g, function (c) {
+//                 var r = Math.random() * 16 | 0;
+//                 var v = c === 'x' ? r : (r & 0x3 | 0x8);
+//                 return v.toString(16);
+//             });
+
 function config_ui () {
 
   var exportsInfo = {};
+
+
+  try {
+    var d = app.getCustomOptions(config_key);
+    descriptorToObject(exportsInfo, d, option_storage_desc);
+    d = null;
+  }
+  catch(e) {
+    // it's ok if we don't have any options, continue with defaults
+    $.writeln( obj2str(e) );
+  }
+
+  $.writeln( obj2str( exportsInfo ) );
 
   var dlgMain = new Window("dialog", 'psd 导出设置');
 
@@ -53,14 +77,14 @@ function config_ui () {
   grpFourthLine.orientation = 'row';
   grpFourthLine.alignChildren = 'center';
 
-  var etDestination = grpSecondLine.add("edittext", undefined, 'd:/temp');
+  var etDestination = grpSecondLine.add("edittext", undefined, exportsInfo.destination || 'd:/temp');
   etDestination.preferredSize.width = 160;
 
   var chbAutoMerge = grpThirdLine.add('checkbox', undefined, '自动合并图层');
-  chbAutoMerge.value = false;
+  chbAutoMerge.value = exportsInfo.auto_merge || false;
 
   var chbExportImage = grpFourthLine.add('checkbox', undefined, '导出图片资源');
-  chbExportImage.value = true;
+  chbExportImage.value = exportsInfo.if_exports_image || true;
 
   var btnBrowse = grpSecondLine.add("button", undefined, '浏览');
   var btnRun    = grpTopRight.add("button", undefined, '导出');
@@ -117,6 +141,11 @@ function config_ui () {
     exportsInfo.destination = etDestination.text;
     exportsInfo.auto_merge = chbAutoMerge.value;
     exportsInfo.if_exports_image = chbExportImage.value;
+    
+    var d = objectToDescriptor(exportsInfo, option_storage_desc);
+    app.putCustomOptions(config_key, d);
+    d = null;
+
     clearup();
 
     return exportsInfo;

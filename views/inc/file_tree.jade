@@ -23,13 +23,15 @@ script#node-template(type='text/html')
 
 .tabset-wrap
   div
-    .tabset
+    .tabset.container-fluid
       +ko('with:widgetTree')
-        ul.nav.nav-tabs(data-bind="foreach: tabs")
-          li(data-bind='css:{active: selected},\
-                        click: $parent.select')
-            .tab-heading
-              .title(data-bind="text:name,attr:{title:name}")
+        .row
+          .col-sx-12
+            b 资源根目录：
+            |  
+            span(data-bind="text:res_root")
+            |  
+            a.btn.btn-default.btn-xs(data-bind='click:change_res_root') change
 
 .file-tree-wrap
   .file-tree-container
@@ -37,4 +39,24 @@ script#node-template(type='text/html')
     .jstree-default.file-tree(data-bind='')
       +ko('if : widgetTree.treeData ')
         ul.jstree-container-ul(data-bind='template:{name : "folder-template", data :widgetTree.treeData}')
+
+#change_res_root_modal.modal.fade(tabindex='-1')
+  .modal-dialog
+    .modal-content
+      +ko('with:widgetTree')
+        .modal-header
+          button.close(type='button', data-dismiss='modal', aria-label='Close')
+            span(aria-hidden='true') ×
+          |         
+          h4.modal-title 变更资源根目录
+        .modal-body
+          +ko('if:save_res_root_failed')
+            p.bg-danger(data-bind="text:save_res_root_failed")
+
+          .form
+            input.form-control(data-bind="value:temp_res_root")
+        .modal-footer
+          button.btn.btn-primary(type='button', data-bind="click:save_res_root") 确认
+          |         
+          button.btn.btn-default(type='button', data-dismiss='modal') 取消
 

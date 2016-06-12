@@ -44,7 +44,7 @@ if (app.get('env') === 'development') {
     res.status(err.status || 500);
     if( req.xhr ){
       res.json({
-        err : err.status,
+        err : err.status || 1,
         message : err.message,
         stack : err.stack
       })
