@@ -1,9 +1,6 @@
 #include './utils.jsx';
 #include './json.jsx';
 
-$.level = 1;
-
-
 var runButtonId = 1;
 var cancelButtonID = 2;
 
@@ -30,10 +27,8 @@ function config_ui () {
   }
   catch(e) {
     // it's ok if we don't have any options, continue with defaults
-    $.writeln( obj2str(e) );
   }
 
-  $.writeln( obj2str( exportsInfo ) );
 
   var dlgMain = new Window("dialog", 'psd 导出设置');
 

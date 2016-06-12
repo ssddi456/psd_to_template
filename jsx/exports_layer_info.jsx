@@ -109,7 +109,7 @@ function auto_merge_layers() {
       return;
     }
 
-    if ( layer.typename == 'LayerSet'){
+    if ( layer.typename == 'LayerSet' && layer.visible ){
       layer.merge();
     }
     return false;
