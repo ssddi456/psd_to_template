@@ -243,6 +243,10 @@ router.post('/change_res_root', function( req, resp, next ) {
     return next(e);
   }
 
+  _watcher.destroy();
+
+  _watcher = watcher([root]);
+
   resp.json({
     err : 0
   });

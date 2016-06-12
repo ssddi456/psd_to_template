@@ -104,7 +104,16 @@ function count_layers () {
 }
 
 function auto_merge_layers() {
-    
+  walk_though_layers(actual_doc, function( layer, is_group, is_root, root_path ) {
+    if( is_root ){
+      return;
+    }
+
+    if ( layer.typename == 'LayerSet'){
+      layer.merge();
+    }
+    return false;
+  });
 }
 
 function layer_name_to_class_name( str ){

@@ -57,11 +57,12 @@ module.exports = function watcher ( watch_pathes ) {
                 for ( i=0;  i<watchers.length; i++ ) {
                     watchers[i].close();
                 }
+                ret.destroy = function() {};
             };
             ret.emit('bootstraped');
         }
     });
     
-    return ret;440
+    return ret;
     
 };
