@@ -37,6 +37,8 @@ var fisKernel = require('fis-kernel');
 
 var psd_tree = require('../implements/psd_tree');
 
+var attributs_to_css = require('../libs/attributs_to_css');
+var node_to_html = require('../libs/node_to_html');
 
 var visitable_map = [
   '.jpg',
@@ -71,7 +73,7 @@ router.get('/tree',function(req, resp, next) {
 
 });
 
-var attributs_to_css = require('../libs/attributs_to_css');
+
 router.get('/node_preview', function( req, resp, next ) {
 
   psd_tree.get_patched(function( err, items) {
@@ -88,7 +90,7 @@ router.get('/node_preview', function( req, resp, next ) {
 
     resp.render('psd_template', {
       obj_to_style_str: function( node ) {
-        return attributs_to_css(node, {});
+        return attributs_to_css(node, { preview : true });
       },
       nodes : nodes
     });
@@ -158,6 +160,7 @@ router.post('/change_node', function( req, resp, next ) {
 router.get('/compile_node', function( req, resp, next ) {
   var node = req.query;
   node = psd_tree.get_node(node.pathname);
+
   storage.get_exports_config(function(err, conf) {
     if( err ){
       return next(new Error('render config load failed'));
@@ -165,15 +168,22 @@ router.get('/compile_node', function( req, resp, next ) {
 
     conf = _.extend({ beautify : true }, conf);
 
-    var css = attributs_to_css.create_css_frame( node, conf );
+    var css = attributs_to_css.create_css_frame( node, null, conf );
+    var html = node_to_html(node, conf);
 
     resp.json({
       err : 0,
-      css : css
-    })
+      css : css,
+      html : html
+    });
   });
 
 });
+
+
+function compile( done ) {
+  done && done();
+}
 
 router.get('/recompile', function( req, resp, next ) {
   compile(function(e) {

@@ -54,14 +54,17 @@ var get_patcher = module.exports = function( tree_old, tree_new ) {
     patches.push(patch_op(name, 'created', node));
   });
 
-  // 打个在这里打个补丁
-  var root = tree_new['root'];
-  root.pathname = 'root';
-  build_tree( root, tree_new );
+  post_process_patched_data(tree_new);
 
   return patches;
 };
 
+function post_process_patched_data( tree ) {
+  // 在这里打个补丁
+  var root = tree['root'];
+  root.pathname = 'root';
+  build_tree( root, tree );
+}
 
 function patch_op ( name, op, params ) {
   return {
@@ -104,6 +107,8 @@ function apply_patch( node_map, patch_ops ) {
         break;
     }
   });
+
+  post_process_patched_data( node_map );
 
   patch_ops = patch_ops.filter(function( patch_op ) {
     return !patch_op.to_delete;

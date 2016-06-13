@@ -18,6 +18,11 @@ var position_keys = [
 var size_keys = [
   'width', 'height', 'font-size'
 ];
+
+var svg_specific = {
+  color : 'fill'
+};
+
 // 
 // var name_type_map = {
 //   'child_pos_type' : {
@@ -44,7 +49,7 @@ function normalize_value( string, options ) {
 }
 
 
-function create_css_frame( node, upper_lv ) {
+function create_css_frame( node, upper_lv, conf ) {
   upper_lv = upper_lv  || '';
   if( upper_lv ){
     upper_lv += ' ';
@@ -55,11 +60,12 @@ function create_css_frame( node, upper_lv ) {
 
   rets.push( cur_name );
   rets.push( '{' );
-  attributs_to_css(node);
+  rets.push( attributs_to_css(node, conf) );
   rets.push( '}' );
 
-  node.nodes.reverse().forEach(function( node ) {
-    rets.push( create_css_frame( node, cur_name ) );
+
+  node.nodes && node.nodes.reverse().forEach(function( node ) {
+    rets.push( create_css_frame( node, cur_name, conf ) );
   });
 
   return rets.join('\n');
@@ -83,50 +89,74 @@ var attributs_to_css = module.exports = function( layer_node, options ) {
   var plain_styles = _.difference(origin_style_keys, position_keys.concat(size_keys));
 
   plain_styles.forEach(function( key ) {
-    rets.push( key + ':' + style[key] );
-  });
-
-  size_keys.forEach(function( key ) {
-    if( key in style ){
-      rets.push( key + ':' + normalize_value( style[key], options) );
+    var value = style[key];
+    if( key in svg_specific ){
+      key = svg_specific[key];
     }
+    rets.push( key + ':' + value );
   });
 
-  var effects = _.extend({
-    'align-horizontal' : 'left',
-    'align-vertical' : 'top'
-  }, layer_node.effect);
+  if( options.html_type != 'svg' ){
 
-  var pos_style = layer_node.relative_style || style;
+    size_keys.forEach(function( key ) {
+      if( key in style ){
+        rets.push( key + ':' + normalize_value( style[key], options) );
+      }
+    });
 
-  switch( effects['align-horizontal'] ){
-    case 'left' :
-      rets.push( 'left: ' + normalize_value(pos_style['left'], options) );
-      break;
-    case 'right' :
-      rets.push( 'right: ' + normalize_value(pos_style['right'], options) );
-      break;
-    case 'center' :
-      rets.push( 'margin-left:0');
-      rets.push( 'margin-right:0');
-      rets.push( 'left: 0');
-      rets.push( 'right: 0');
-      break;
-  }
+    var effects = _.extend({
+      'align-horizontal' : 'left',
+      'align-vertical' : 'top'
+    }, layer_node.effect);
 
-  switch( effects['align-vertical'] ){
-    case 'top' :
-      rets.push( 'top: ' + normalize_value(pos_style['top'], options) );
-      break;
-    case 'bottom' :
-      rets.push( 'bottom: ' + normalize_value(pos_style['bottom'], options) );
-      break;
-    case 'center' :
-      rets.push( 'margin-top:0');
-      rets.push( 'margin-bottom:0');
-      rets.push( 'top: 0');
-      rets.push( 'bottom: 0');
-      break;
+    var pos_style = layer_node.relative_style || style;
+
+    if( !options.preview 
+      && layer_node.src 
+      && !layer_node.text 
+    ){
+      rets.push( 'background-img: url(' + layer_node.relative_src +')' );
+      rets.push( 'background-position: center center' );
+      rets.push( 'background-size: contain' );
+    }
+
+    switch( effects['align-horizontal'] ){
+      case 'left' :
+        if( pos_style['left'] ){
+          rets.push( 'left: ' + normalize_value(pos_style['left'], options) );
+        }
+        break;
+      case 'right' :
+        if( pos_style['right'] ){
+          rets.push( 'right: ' + normalize_value(pos_style['right'], options) );
+        }
+        break;
+      case 'center' :
+        rets.push( 'margin-left:0');
+        rets.push( 'margin-right:0');
+        rets.push( 'left: 0');
+        rets.push( 'right: 0');
+        break;
+    }
+
+    switch( effects['align-vertical'] ){
+      case 'top' :
+        if( pos_style['top'] ){
+          rets.push( 'top: ' + normalize_value(pos_style['top'], options) );
+        }
+        break;
+      case 'bottom' :
+        if( pos_style['bottom'] ){
+          rets.push( 'bottom: ' + normalize_value(pos_style['bottom'], options) );
+        }
+        break;
+      case 'center' :
+        rets.push( 'margin-top:0');
+        rets.push( 'margin-bottom:0');
+        rets.push( 'top: 0');
+        rets.push( 'bottom: 0');
+        break;
+    }
   }
 
   var delimiter = ';';
@@ -134,7 +164,9 @@ var attributs_to_css = module.exports = function( layer_node, options ) {
     delimiter = ';\n';
   }
 
-  var ret = rets.join(delimiter);
+  var ret = rets.map(function( line ) {
+    return '  ' + line + delimiter;
+  }).join('').slice(0, -1);
   return ret;
 }
 

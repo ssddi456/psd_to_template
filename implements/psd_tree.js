@@ -85,6 +85,6 @@ var proxy_methods = [
 
 proxy_methods.forEach(function( name ) {
   psd_tree[name] = function() {
-    _psd_tree[name].apply(_psd_tree, [].slice.call(arguments));
+    return _psd_tree[name].apply(_psd_tree, [].slice.call(arguments));
   }
 });
