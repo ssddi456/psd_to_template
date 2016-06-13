@@ -18,7 +18,6 @@ var tree_with_patch = module.exports = function( source_data_path ) {
 
   var origin_data = null;
   var patched_data = null;
-  var patches = null;
 
   var emitter = new events();
 
@@ -42,9 +41,9 @@ var tree_with_patch = module.exports = function( source_data_path ) {
        origin_data = JSON.parse(datas[0] || '{}');
        patched_data  = JSON.parse(datas[0] || '{}');
 
-       patches = datas[1] || [];
+       var patches = datas[1] || [];
 
-       patches = tree_patcher.apply_patch( patched_data, patches );
+       tree_patcher.apply_patch( patched_data, patches );
 
        debug('inited', source_data_path, patch_data_path);
 
@@ -78,7 +77,7 @@ var tree_with_patch = module.exports = function( source_data_path ) {
           _.extendOwn(origin_node.effect, param.attributes.effect);
         });
 
-        patches = tree_patcher( origin_data, patched_data );
+        var patches = tree_patcher( origin_data, patched_data );
         debug('patch edited', patches);
         fsExtra.writeJSON( patch_data_path, patches, done );
 
@@ -105,10 +104,14 @@ var tree_with_patch = module.exports = function( source_data_path ) {
         }
 
         var diff_patcher = tree_patcher(origin_data, updated_source);
-        patches = tree_patcher.merge_patch(patches, diff_patcher);
+        var patches = tree_patcher.merge_patch(patches, diff_patcher);
+        origin_data = updated_source;
+        fsExtra.writeJSON( patch_data_path, patches, done );
 
-        done(null);
       });
+    },
+    get_node : function( pathname ) {
+      return patched_data[pathname];
     }
   };
 };

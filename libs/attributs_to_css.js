@@ -43,6 +43,28 @@ function normalize_value( string, options ) {
   }
 }
 
+
+function create_css_frame( node, upper_lv ) {
+  upper_lv = upper_lv  || '';
+  if( upper_lv ){
+    upper_lv += ' ';
+  }
+
+  var rets = [];
+  var cur_name = upper_lv + node.class_name;
+
+  rets.push( cur_name );
+  rets.push( '{' );
+  attributs_to_css(node);
+  rets.push( '}' );
+
+  node.nodes.reverse().forEach(function( node ) {
+    rets.push( create_css_frame( node, cur_name ) );
+  });
+
+  return rets.join('\n');
+}
+
 var attributs_to_css = module.exports = function( layer_node, options ) {
 
 
@@ -115,3 +137,5 @@ var attributs_to_css = module.exports = function( layer_node, options ) {
   var ret = rets.join(delimiter);
   return ret;
 }
+
+attributs_to_css.create_css_frame = create_css_frame;

@@ -156,11 +156,6 @@ define([
         "  head",
         "    meta(charset='UTF-8')",
         "    title Document",
-        "",
-        "    link(rel='stylesheet', type='text/css', href='//cdn.staticfile.org/twitter-bootstrap/3.3.1/css/bootstrap.min.css')",
-        "    link(rel='stylesheet', href='/stylesheets/main.css')",
-        "    link(rel='stylesheet', href='/stylesheets/jstree.css')",
-        "",
         "  body",
         code,
       ].join('\n');        
@@ -214,10 +209,6 @@ define([
   }
 
   function create_css( node ) {
-    if( node.type == 'directory') {
-      vm.css(create_css_frame(node));
-      return;
-    }
 
     var actual_node = get_actual_node_info(node);
 
@@ -245,14 +236,7 @@ define([
 
   function get_actual_node_info ( node ) {
     return {
-      style :      node.style,
-      effect :     node.effect,
-
-      children :   node.origin.children,
-      parent :     node.origin.parent,
-      is_group :   node.origin.is_group,
-      class_name : node.origin.class_name,
-      index :      node.origin.index,
+      pathname : node.pathname
     };  
   }
   function change_node_attribute ( node ) {

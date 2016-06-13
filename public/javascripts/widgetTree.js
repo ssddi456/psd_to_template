@@ -24,7 +24,7 @@ define([
     self.isExpanded = ko.observable(true);
     self.description = ko.observable( data.description );
     self.name = ko.observable( data.name );
-
+    self.pathname = data.pathname;
 
     self.type = data.type;
     self.root = data.root;
@@ -37,7 +37,7 @@ define([
     self.text= data.text;
     self.class_name = data.class_name;
     self.src = data.src;
-
+    self.relative_src = data.relative_src;
 
     self.toggleVisibility = function(vm, e) {
       e.stopPropagation();
@@ -100,6 +100,7 @@ define([
       node.type = node.is_group ? 'directory' : 'file';
       node.description = key;
       node.name = node.class_name;
+      node.pathname = key;
 
       if( parent ){
         (parent.nodes = parent.nodes || []).push(node);

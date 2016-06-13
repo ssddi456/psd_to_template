@@ -33,19 +33,9 @@ var static_root = route_relative('public');
 var fsExtra = require('fs-extra');
 var async = require('async');
 
-
-
 var fisKernel = require('fis-kernel');
 
 var psd_tree = require('../implements/psd_tree');
-
-
-
-var watch_pathes = [ 
-  'D:\\temp',
-  'D:\\gitchunk\\psd_to_template\\views'
-];
-
 
 
 var visitable_map = [
@@ -164,14 +154,19 @@ router.post('/change_node', function( req, resp, next ) {
   })
 });
 
+
 router.get('/compile_node', function( req, resp, next ) {
   var node = req.query;
+  node = psd_tree.get_node(node.pathname);
   storage.get_exports_config(function(err, conf) {
     if( err ){
       return next(new Error('render config load failed'));
     }
+
     conf = _.extend({ beautify : true }, conf);
-    var css = attributs_to_css( node, conf);
+
+    var css = attributs_to_css.create_css_frame( node, conf );
+
     resp.json({
       err : 0,
       css : css
@@ -194,38 +189,6 @@ router.get('/recompile', function( req, resp, next ) {
 
 
 
-var child_process = require('child_process');
-
-function compile ( done ) {
-  done && done();
-}
-
-compile();
-
-var watcher = require('../implements/watcher');
-
-var _watcher = watcher(watch_pathes);
-_watcher.on('change', function( data ) {
-  var changeType  = data.changeType;
-  var filePath  = data.filePath;
-  var fileCurrentStat  = data.fileCurrentStat;
-  var filePreviousStat  = data.filePreviousStat;
-
-  // compile(function() {
-  //   // here need some tree updates
-  //   if( changeType == 'update' ){
-  //     if( filePath.indexOf( view_root ) == 0 ){
-  //       debug('template change ');
-  //       reload( filePath );
-  //     } else {
-  //       debug('static file change');
-  //       reload( '/' + path.relative(static_root, filePath).replace(/\\/g, '/') );
-  //     }
-  //   }
-  // });
-});
-
-
 router.post('/change_res_root', function( req, resp, next ) {
   // check if the new root is legal
   var root = req.body.root;
@@ -243,10 +206,6 @@ router.post('/change_res_root', function( req, resp, next ) {
     return next(e);
   }
 
-  _watcher.destroy();
-
-  _watcher = watcher([root]);
-
   resp.json({
     err : 0
   });
@@ -262,17 +221,6 @@ router.post('/change_res_root', function( req, resp, next ) {
 //        reload previewer
 //
 //
-
-var LRServer = require('../libs/livereload_server_instance');
-function reload( filepath ){
-  debug('reload', filepath);
-
-  LRServer.broadcast({
-    command: 'reload',
-    path: filepath,
-    liveCSS: true
-  });
-}
 
 
 module.exports = router;

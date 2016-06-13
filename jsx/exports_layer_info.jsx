@@ -13,8 +13,9 @@
 #include './ui_util.js'
 
 // debug level: 0-2 (0:disable, 1:break on error, 2:break at beginning)
-$.level = 1;
-// debugger; // launch debugger on next line
+// $.level = 1;
+// launch debugger on next line
+// debugger; 
 
 var docRef = app.activeDocument;
 

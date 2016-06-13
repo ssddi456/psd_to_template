@@ -10,14 +10,11 @@ if( debug_name == 'index'){
 var debug = require('debug')(debug_name);
 var _ = require('underscore');
 
-
-
 var attr_need_patch_list = [
   'style',
   'ext_style',
   'effect'
 ];
-
 
 var get_patcher = module.exports = function( tree_old, tree_new ) {
   
@@ -56,6 +53,11 @@ var get_patcher = module.exports = function( tree_old, tree_new ) {
     var node = tree_new[name];
     patches.push(patch_op(name, 'created', node));
   });
+
+  // 打个在这里打个补丁
+  var root = tree_new['root'];
+  root.pathname = 'root';
+  build_tree( root, tree_new );
 
   return patches;
 };
@@ -306,14 +308,32 @@ var get_tree_info = function( tree ) {
     }
 }
 
+var tree_node_to_json = function() {
+  var ret = {};
+  for(var k in this){
+    if( this.hasOwnProperty(k) 
+      && k != 'toJSON'
+      && k != 'nodes'
+    ){
+      ret[k] = this[k];
+    }
+  };
+  return ret;
+}
 var build_tree = function( root, tree ) {
-  root.children = root.children.map(function( node_name ) {
+  root.nodes = root.children.map(function( node_name ) {
     var child = tree[node_name];
+    child.pathname = node_name;
+
     if( child.children.length ){
       build_tree( child, tree );
+    } else{
+      child.nodes = [];
+      root.toJSON = tree_node_to_json;
     }
     return child;
   });
+  root.toJSON = tree_node_to_json;
 }
 
 module.exports.apply_patch = apply_patch;
