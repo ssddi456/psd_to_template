@@ -126,7 +126,10 @@ function create_html( node, conf ) {
   var type = conf.html_type;
 
   var indent = 0;
-  var with_root = conf.with_root;
+
+  conf.text_middle = (conf.text_middle + '' == 'true');
+  var with_root = (conf.with_root + '' == 'true');
+
   if( with_root ){
     indent = 2;
   }

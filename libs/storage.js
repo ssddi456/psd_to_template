@@ -18,6 +18,8 @@ var default_config = {
   html_type : 'html',
   unit_type : 'px',
   rem_base  : 16,
+  with_root : true,
+  text_middle : true,
   exports_config : true
 };
 
