@@ -15,7 +15,7 @@ function get_indents( n ) {
 var html_generators = {
   'html' : function( node, indent, conf ) {
     indent = indent || 0;
-    if( node.type == 'directory' ){
+    if( node.is_group ){
       var code = [
                     get_indents(indent) + '<div class="'+ node.class_name.slice(1) + '">', 
                     node.nodes.reverse()
@@ -33,7 +33,7 @@ var html_generators = {
   'jade' : function( node, indent, conf ) {
     indent = indent || 0;
 
-    if( node.type == 'directory' ){
+    if( node.is_group ){
       var code = [
                     get_indents(indent) + node.class_name,
                     node.nodes.reverse()
@@ -49,7 +49,7 @@ var html_generators = {
   'svg'  : function( node, indent, conf ) {
     indent = indent || 0;
     
-    if( node.type == 'directory' ){
+    if( node.is_group ){
       var code = [
                     get_indents(indent) + '<g class="'+ node.class_name.slice(1) + '">', 
                     node.nodes.reverse()
