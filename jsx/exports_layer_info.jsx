@@ -87,9 +87,12 @@ function get_layer_styles ( progress ) {
 
         layers.push( layer_node );
 
-        layer_node.relative_src = './sources/' + item_path  + '.png';
-        layer_node.src = exportInfo.destination + '/sources/' + item_path  + '.png';
-        layer_node.src = layer_node.src.replace(/ /g,'-');
+        layer_node.relative_src = ('./sources/' + item_path  + '.png')
+                                    .replace(/ /g,'-');
+
+        layer_node.src = (exportInfo.destination + '/sources/' + item_path  + '.png')
+                            .replace(/ /g,'-');
+
         layer_attr_to_style( layer, layer_node, item_path );
       }
     }

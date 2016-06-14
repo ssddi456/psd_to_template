@@ -115,6 +115,48 @@ router.get('/node_source', function( req, resp, next ) {
   });
 });
 
+// preview proxy
+router.get(/^\/preview(\/*)?/, function( req, resp, next ) {
+  var query = req.query;
+  var pathname = req._parsedUrl.pathname;
+  pathname = pathname.replace(/^\/preview/, '');
+
+  if( pathname == '' || pathname == '/' ){
+
+    node = psd_tree.get_node('root');
+    storage.get_exports_config(function(err, conf) {
+      if( err ){
+        return next(new Error('render config load failed'));
+      }
+
+      conf = _.extend({ beautify : true }, conf);
+
+      conf.with_root = true;
+      conf.css_hook = true;
+
+      if( query.html_type ){
+        conf.html_type = query.html_type;
+      }
+
+      if( conf.html_type == 'jade' ){
+        conf.html_type = 'html';
+      }
+
+      var css = attributs_to_css.create_css_frame( node, null, conf );
+      var html = node_to_html(node, conf);
+
+      html = html.replace('<!-- css_hook -->', css);
+      resp.set('Content-Type', fisKernel.util.getMimeType( conf.html_type ));
+      resp.end(html);
+    });
+
+  } else {
+    console.log( path.join( psd_tree.get_res_root(), decodeURIComponent(pathname)) );
+
+    resp.sendFile( path.join( psd_tree.get_res_root(), decodeURIComponent(pathname)));
+  }
+});
+
 router.get('/node_dest', function( req, resp, next ) {
   var node_path = req.query.node_path;
   var root = req.query.root;

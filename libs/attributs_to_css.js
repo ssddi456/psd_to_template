@@ -16,7 +16,11 @@ var position_keys = [
 ];
 
 var size_keys = [
-  'width', 'height', 'font-size'
+  'width', 'height'
+];
+
+var text_keys = [
+  'font-size'
 ];
 
 var svg_specific = {
@@ -90,10 +94,20 @@ var attributs_to_css = module.exports = function( layer_node, options ) {
 
   plain_styles.forEach(function( key ) {
     var value = style[key];
-    if( key in svg_specific ){
-      key = svg_specific[key];
+
+    if( options.html_type == 'svg' ){
+      if( key in svg_specific ){
+        key = svg_specific[key];
+      }
     }
+
     rets.push( key + ':' + value );
+  });
+
+  text_keys.forEach(function( key ) {
+    if( key in style ){
+      rets.push( key + ':' + normalize_value( style[key], options ) );
+    }
   });
 
   if( options.html_type != 'svg' ){
@@ -104,6 +118,8 @@ var attributs_to_css = module.exports = function( layer_node, options ) {
       }
     });
 
+    rets.push( 'position:absolute;' );
+
     var effects = _.extend({
       'align-horizontal' : 'left',
       'align-vertical' : 'top'
@@ -111,11 +127,12 @@ var attributs_to_css = module.exports = function( layer_node, options ) {
 
     var pos_style = layer_node.relative_style || style;
 
+
     if( !options.preview 
       && layer_node.src 
       && !layer_node.text 
     ){
-      rets.push( 'background-img: url(' + layer_node.relative_src +')' );
+      rets.push( 'background-image: url(' + layer_node.relative_src +')' );
       rets.push( 'background-position: center center' );
       rets.push( 'background-size: contain' );
     }

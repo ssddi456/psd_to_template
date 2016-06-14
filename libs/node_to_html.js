@@ -18,7 +18,7 @@ var html_generators = {
     if( node.is_group ){
       var code = [
                     get_indents(indent) + '<div class="'+ node.class_name.slice(1) + '">', 
-                    node.nodes.reverse()
+                    node.nodes
                       .map(function( node ) {
                         return html_generators['html'](node, indent+1, conf);
                       }).join('\n'),
@@ -36,7 +36,7 @@ var html_generators = {
     if( node.is_group ){
       var code = [
                     get_indents(indent) + node.class_name,
-                    node.nodes.reverse()
+                    node.nodes
                       .map(function( node ) {
                         return html_generators['jade'](node, indent+1, conf);
                       }).join('\n'),
@@ -52,7 +52,7 @@ var html_generators = {
     if( node.is_group ){
       var code = [
                     get_indents(indent) + '<g class="'+ node.class_name.slice(1) + '">', 
-                    node.nodes.reverse()
+                    node.nodes
                       .map(function( node ) {
                         return html_generators['svg'](node, indent+1, conf);
                       }).join('\n'),
@@ -85,13 +85,14 @@ var html_generators = {
 };
 
 var root_map = {
-  'html' : function( code ) {
+  'html' : function( code, conf ) {
     return [
       '<!DOCTYPE html>',
       '<html lang="en">',
       '  <head>',
       '    <meta charset="UTF-8">',
-      '    <title>Document</title>',
+      '    <title>Document</title>' 
+      + ( conf.css_hook ? '<style>\n<!-- css_hook -->\n</style>' : ''),
       '  </head>',
       '  <body>',
       code,
@@ -99,7 +100,7 @@ var root_map = {
       '</html>',
     ].join('\n');        
   },
-  'jade' : function( code ) {
+  'jade' : function( code, conf ) {
     return [
       "<!DOCTYPE html>",
       "html(lang='en')",
@@ -110,12 +111,13 @@ var root_map = {
       code,
     ].join('\n');        
   },
-  'svg'  : function( code ) {
+  'svg'  : function( code, conf ) {
     return [
       '<svg ',
       '  version="0.1" ',
       '  xmlns="http://www.w3.org/2000/svg" ',
-      '  xmlns:xlink="http://www.w3.org/1999/xlink" >',
+      '  xmlns:xlink="http://www.w3.org/1999/xlink" >' 
+      + ( conf.css_hook ? '<style>\n<!-- css_hook -->\n</style>' : ''),
       code,
       '</svg>'
     ].join('\n');
@@ -136,7 +138,7 @@ function create_html( node, conf ) {
 
   var ret = html_generators[type](node, indent, conf);
   if( with_root ){
-    ret = root_map[type](ret);
+    ret = root_map[type](ret, conf);
   }
   return ret;
 }
