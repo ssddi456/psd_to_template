@@ -14,9 +14,25 @@ include ./mixins.jade
 
     .container-fluid
       +ko('if : node')
-        .row(data-bind="if: node().text")
-          +panel('text')
-            textarea.form-control(data-bind="autoscale: node().text",wrap="off",readonly)
+        +ko('with : node()')
+          +ko('if: $data.text')
+            .row
+              +panel('text')
+                textarea.form-control(data-bind="autoscale: text",wrap="off",readonly)
+
+          +ko('if: !$data.text && $data.src')
+            .row
+              +panel('preview')
+                .preview_wrapper
+                  center
+                    p
+                      img.preview(data-bind='attr:{ "src" : "/preview/" + relative_src  }')
+                    +ko('if:$parent.preview_info')
+                      +ko('with:$parent.preview_info')
+                        p
+                          span(data-bind="text: wh_size")
+                          br
+                          span(data-bind="text: b_size/1000 + ' kb' ")
 
         .row
           .panel.panel-default
@@ -29,7 +45,7 @@ include ./mixins.jade
                     span(data-bind="text : $data")
                   |  
                 +ko('if : unit_type() == "rem"')
-                  label
+                  label.radio
                     input.form-control(type="text", data-bind="value: rem_base", 
                                        style="width:20px; height: auto; padding:0;")
                     | px

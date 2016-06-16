@@ -66,7 +66,7 @@ function config_ui () {
 
   var grpThirdLine = grpTopLeft.add("group");
   grpThirdLine.orientation = 'row';
-  grpThirdLine.alignChildren = 'center';
+  grpThirdLine.alignChildren = 'left';
 
   var grpFourthLine = grpTopLeft.add("group");
   grpFourthLine.orientation = 'row';
@@ -75,8 +75,20 @@ function config_ui () {
   var etDestination = grpSecondLine.add("edittext", undefined, exportsInfo.destination || 'd:/temp');
   etDestination.preferredSize.width = 160;
 
-  var chbAutoMerge = grpThirdLine.add('checkbox', undefined, '自动合并图层');
+  var grp_3_1 = grpThirdLine.add('group');
+  grp_3_1.orientation = 'row';
+  grp_3_1.alignChildren = 'center';
+
+  var grp_3_2 = grpThirdLine.add('group');
+  grp_3_2.orientation = 'row';
+  grp_3_2.alignChildren = 'left';
+  grp_3_2.visible = exportsInfo.auto_merge || false;
+
+  var chbAutoMerge = grp_3_1.add('checkbox', undefined, '自动合并图层');
   chbAutoMerge.value = exportsInfo.auto_merge || false;
+
+  grp_3_2.add('statictext', undefined, '保留图层层级');
+  var etLayerDeep = grp_3_2.add('edittext', undefined, (exportsInfo.layer_deep || 0) + '');
 
   var chbExportImage = grpFourthLine.add('checkbox', undefined, '导出图片资源');
   chbExportImage.value = exportsInfo.if_exports_image || true;
@@ -95,6 +107,10 @@ function config_ui () {
     if ( selFolder != null ) {
       etDestination.text = selFolder.fsName;
     }
+  };
+
+  chbAutoMerge.onClick = function() {
+    grp_3_2.visible = chbAutoMerge.value;
   };
 
   btnRun.onClick = function() {
@@ -124,6 +140,10 @@ function config_ui () {
 
     grpFourthLine = null;
     chbExportImage = null;
+
+    grp_3_1 = null;
+    grp_3_2 = null;
+    etLayerDeep = null;
   }
 
   if( result == cancelButtonID ){
@@ -135,6 +155,7 @@ function config_ui () {
 
     exportsInfo.destination = etDestination.text;
     exportsInfo.auto_merge = chbAutoMerge.value;
+    exportsInfo.layer_deep = Math.max(0, etLayerDeep.text*1);
     exportsInfo.if_exports_image = chbExportImage.value;
     
     var d = objectToDescriptor(exportsInfo, option_storage_desc);

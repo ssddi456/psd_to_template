@@ -107,16 +107,19 @@ function count_layers () {
     return count;
 }
 
-function auto_merge_layers() {
-  walk_though_layers(actual_doc, function( layer, is_group, is_root, root_path ) {
+function auto_merge_layers( max_depth ) {
+  walk_though_layers(actual_doc, function( layer, is_group, is_root, root_path, depth ) {
     if( is_root ){
       return;
     }
 
-    if ( layer.typename == 'LayerSet' && layer.visible ){
-      layer.merge();
+    if ( layer.typename == 'LayerSet' && layer.visible && depth > max_depth ){
+      if( layer.layers.length ){
+        // 空的layerset无法merge
+        layer.merge();
+      }
+      return false;
     }
-    return false;
   });
 }
 
@@ -206,7 +209,7 @@ function do_exports () {
 
   if( exportInfo.auto_merge ){
     progress.stat('合并图层');
-    auto_merge_layers();
+    auto_merge_layers( exportInfo.layer_deep );
     progress.increase();
   }
 

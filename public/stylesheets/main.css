@@ -16,10 +16,14 @@
 
 .col-parts{
     position: absolute;
+
     top:0;
     left: 0;
     right: 0;
     bottom: 0;
+
+    padding-left: 5px;
+    padding-right: 5px;
 
     overflow: auto;
 }
@@ -213,4 +217,13 @@
 }
 .attr_editor .panel-body .table{
     margin-bottom: 0;
+}
+
+.attr_editor .preview_wrapper{
+    padding: 5px;
+}
+
+.attr_editor .preview{
+    max-width: 100%;
+    max-height: 240px;
 }

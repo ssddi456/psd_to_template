@@ -203,22 +203,46 @@ router.get('/compile_node', function( req, resp, next ) {
   var node = req.query;
   node = psd_tree.get_node(node.pathname);
 
-  storage.get_exports_config(function(err, conf) {
-    if( err ){
-      return next(new Error('render config load failed'));
-    }
+  async.parallel([
+    function( done ) {
+      if( node.src ){
+        fs.stat( node.src, function(err, stat) {
+            done(err, err || { b_size : stat.size });
+        });
+      } else {
+        done(null, { b_size : 0 });
+      }
+    },
+    function( done ) {
+      storage.get_exports_config(function(err, conf) {
+        if( err ){
+          return done(new Error('render config load failed'));
+        }
 
-    conf = _.extend({ beautify : true }, conf);
+        conf = _.extend({ beautify : true }, conf);
 
-    var css = attributs_to_css.create_css_frame( node, null, conf );
-    var html = node_to_html(node, conf);
+        var css = attributs_to_css.create_css_frame( node, null, conf );
+        var html = node_to_html(node, conf);
 
-    resp.json({
-      err : 0,
-      css : css,
-      html : html
-    });
-  });
+        done(null, {
+          css  : css,
+          html : html
+        });
+      });
+        
+    }], 
+    function( err, res ) {
+      if(err)    {
+        return next(err);
+      }
+
+      resp.json({
+        err : 0,
+        css : res[1].css,
+        html : res[1].html,
+        preview_info : { b_size : res[0].b_size }
+      });
+    })
 
 });
 

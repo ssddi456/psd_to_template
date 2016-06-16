@@ -19,7 +19,9 @@ define([
     rem_base : ko.observable(16),
 
     html : ko.observable(''),
-    css : ko.observable('')
+    css : ko.observable(''),
+
+    preview_info : ko.observable()
   };
 
   var visible_keys = [
@@ -67,6 +69,12 @@ define([
       vm.html(json.html);
       vm.css(json.css);
 
+      json.preview_info = json.preview_info || {};
+
+      var style = node.style;
+      json.preview_info.wh_size = style.width + ' x ' + style.height;
+
+      vm.preview_info(json.preview_info);
     });
   }
 

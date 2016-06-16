@@ -96,12 +96,13 @@ function bounds_to_bbox( bounds, exports ) {
 }
 
 
-function walk_though_layers ( root, handle, root_path ) {
+function walk_though_layers ( root, handle, root_path, depth ) {
   if( root_path !== undefined ){
     root_path += '_' + root.name;
   } else {
     root_path = 'root';
-    handle( root, true, true, '');
+    depth = 0;
+    handle( root, true, true, '', depth);
   }
 
 
@@ -117,11 +118,11 @@ function walk_though_layers ( root, handle, root_path ) {
     var child = root.layers[i];
     var typename = child.typename;
     if( typename == 'ArtLayer' ){
-      handle(child, false, false, root_path);
+      handle(child, false, false, root_path, depth + 1);
     } else if( typename == 'LayerSet' ){
-      var ret = handle(child, true, false,root_path);
+      var ret = handle(child, true, false, root_path, depth + 1);
       if( ret !== false ){
-        walk_though_layers(child, handle, root_path);
+        walk_though_layers(child, handle, root_path, depth + 1);
       }
     }
   }
