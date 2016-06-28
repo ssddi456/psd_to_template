@@ -18,7 +18,7 @@ var html_generators = {
     if( node.is_group ){
       var code = [
                     get_indents(indent) + '<div class="'+ node.class_name.slice(1) + '">', 
-                    node.nodes
+                    node.nodes.slice().reverse()
                       .map(function( node ) {
                         return html_generators['html'](node, indent+1, conf);
                       }).join('\n'),
@@ -36,7 +36,7 @@ var html_generators = {
     if( node.is_group ){
       var code = [
                     get_indents(indent) + node.class_name,
-                    node.nodes
+                    node.nodes.slice().reverse()
                       .map(function( node ) {
                         return html_generators['jade'](node, indent+1, conf);
                       }).join('\n'),
@@ -52,7 +52,7 @@ var html_generators = {
     if( node.is_group ){
       var code = [
                     get_indents(indent) + '<g class="'+ node.class_name.slice(1) + '">', 
-                    node.nodes
+                    node.nodes.slice().reverse()
                       .map(function( node ) {
                         return html_generators['svg'](node, indent+1, conf);
                       }).join('\n'),
@@ -63,19 +63,57 @@ var html_generators = {
       var style = node.style;
       var subindent = get_indents(indent+1);
       indent = get_indents(indent);
+
+      var relative_to_bbox = conf.relative_to_bbox;
+
+      var ext_style = node.ext_style;
+      var transform = ext_style.transform;
+
       if( node.text ){
-        var ext_style = node.ext_style;
+
         var left = conf.text_middle ? ( ext_style.left  + ext_style.width / 2 ) : ext_style.left;
+        left -= relative_to_bbox.left;
+        var top = ext_style.bottom - relative_to_bbox.top;
+        // we should caculate here
+        if( transform ){
+          transform = {
+            'xx' : transform['xx'], 
+            'yx' : transform['yx'], 
+            'xy' : transform['xy'], 
+            'yy' : transform['yy'],
+
+            'tx' : transform['tx'] + left, 
+            'ty' : transform['ty'] + top - ext_style.height
+          };
+        }
 
         return indent + '<text class="' + node.class_name.slice(1) + '" \n'
-                + subindent + 'x="' + left + '" y="' + ext_style.bottom + '" \n'
-                + subindent + 'text-anchor="middle" '
+                + subindent + 'text-anchor="middle"\n'
+                + ( transform 
+                    ? ( subindent + 'transform="matrix(' 
+                                  + [ 'xx', 'yx', 'xy', 'yy','tx', 'ty' ]
+                                      .map(function( k ) {
+                                          return transform[k];
+                                      }).join(',') 
+                                  + ')"\n')
+                    : subindent + 'x="' + left + '" y="' + top + '" \n')
                 + subindent + 'width="' + ext_style.width + '" height="' + ext_style.height + '">\n'
                 + subindent + '<tspan>' + node.text + '</tspan>\n'
                 + indent + '</text>';
       } else {
+
+        var left = style.left - relative_to_bbox.left;
+        var top  = style.top  - relative_to_bbox.top;
+
         return indent + '<image class="' + node.class_name.slice(1) + '" \n'
-                + subindent + 'x="' + style.left + '" y="' + style.top + '" \n'
+                + subindent + 'x="' + left + '" y="' + top + '" \n'
+                + ( transform ? ( subindent + 'transform="matrix(' 
+                                  + [ 'xx', 'yx', 'xy', 'yy', 'tx', 'ty' ]
+                                      .map(function( k ) {
+                                          return transform[k];
+                                      }).join(',') 
+                                  + ')"\n')
+                    : '')
                 + subindent + 'width="' + style.width + '" height="' + style.height + '" \n'
                 + subindent + 'xlink:href="' + node.relative_src + '" '
                 + indent + '></image>';
@@ -134,6 +172,24 @@ function create_html( node, conf ) {
 
   if( with_root ){
     indent = 2;
+  }
+
+  if( node.effect.child_pos_type == 'relative' ){
+    var style = node.style;
+
+    conf.relative_to_bbox = {
+      left   : style.left,
+      top    : style.top,
+      right  : style.right,
+      bottom : style.bottom,
+    };
+  } else {
+    conf.relative_to_bbox = {
+      left   : 0,
+      top    : 0,
+      right  : 0,
+      bottom : 0,
+    };
   }
 
   var ret = html_generators[type](node, indent, conf);

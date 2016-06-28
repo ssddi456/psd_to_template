@@ -80,6 +80,8 @@ function get_layer_styles ( progress ) {
 
       layer_node.effect.child_pos_type = 'absolute';
 
+      layer_attr_to_style( layer, layer_node, item_path );
+
     } else {
       if( layer.visible ){
         layer.visible = false; 
@@ -136,7 +138,7 @@ function layer_attr_to_style ( layer, layer_node, item_path ) {
   */
   var css_style = layer_node.style;
 
-  if( layer.fillOpacity != 100 ){
+  if( layer.fillOpacity != 100 && layer.fillOpacity != undefined ){
     css_style.opacity = layer.fillOpacity / 100;
   }
 
@@ -152,8 +154,47 @@ function layer_attr_to_style ( layer, layer_node, item_path ) {
     layer_node.text = textitem.contents;
 
     get_text_style( layer, layer_node);
+
+    var _layer = actual_doc.activeLayer;
+    actual_doc.activeLayer = layer;
+    layer_node.ext_style.transform = getActiveLayerTransform();
+    actual_doc.activeLayer = _layer;
   }
-  
+}
+
+function angleFromMatrix(yy, xy){
+  var toDegs = 180/Math.PI;
+  return Math.atan2(yy, xy) * toDegs - 90;
+}
+
+// so we can exports transform
+function getActiveLayerTransform(){
+  var ref = new ActionReference();
+  ref.putEnumerated( c2t("Lyr "), c2t("Ordn"), c2t("Trgt") );
+  var desc = executeActionGet(ref).getObjectValue(s2t('textKey'))
+
+  if (desc.hasKey(s2t('transform'))){
+      desc = desc.getObjectValue(s2t('transform'))
+      // var yy = desc.getDouble(s2t('yy'));
+      // var xy = desc.getDouble(s2t('xy'));
+      // return angleFromMatrix(yy, xy);
+
+      var ret = {};
+      // ret['xx'] = desc.getDouble(s2t('xx'));
+      // ret['xy'] = desc.getDouble(s2t('xy'));
+
+      // ret['yx'] = desc.getDouble(s2t('yx'));
+      // ret['yy'] = desc.getDouble(s2t('yy'));
+      
+      // ret['z'] = desc.getDouble(s2t('z'));
+      
+      // lets look into it
+      descriptorToObject (ret, desc);
+
+      return ret;
+  }
+
+  return 0;
 }
 
 

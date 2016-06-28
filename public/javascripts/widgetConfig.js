@@ -95,14 +95,21 @@ define([
       pathname : node.pathname
     };  
   }
+
+  function get_actual_node_data( node ) {
+    return {
+      style :      node.style,
+      effect :     node.effect,
+    };
+  }
+
   function change_node_attribute ( node ) {
-    var actual_node = get_actual_node_info(node);
+    var actual_node = get_actual_node_data(node);
 
     $.post('/change_node', {
       node_name : node.description,
       attributes: actual_node
     }, function( json ) {
-
       create_exports(node);
     });
   }

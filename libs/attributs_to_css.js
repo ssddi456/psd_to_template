@@ -57,6 +57,25 @@ function create_css_frame( node, upper_lv, conf ) {
   upper_lv = upper_lv  || '';
   if( upper_lv ){
     upper_lv += ' ';
+  } else {
+    debug('node.effect.child_pos_type', node.effect.child_pos_type);
+    if(node.effect.child_pos_type == 'relative' ){
+      var style = node.style;
+      debug( 'relative bbox', style.left, style.top, style.right, style.bottom );
+      conf.relative_to_bbox = {
+        left :   style.left,
+        top :    style.top,
+        right :  style.right,
+        bottom : style.bottom,
+      };
+    } else {
+      conf.relative_to_bbox = {
+        left :   0,
+        top :    0,
+        right :  0,
+        bottom : 0,
+      };
+    }
   }
 
   var rets = [];
@@ -68,7 +87,7 @@ function create_css_frame( node, upper_lv, conf ) {
   rets.push( '}' );
 
 
-  node.nodes && node.nodes.reverse().forEach(function( node ) {
+  node.nodes && node.nodes.slice().reverse().forEach(function( node ) {
     rets.push( create_css_frame( node, cur_name, conf ) );
   });
 
@@ -79,6 +98,7 @@ var attributs_to_css = module.exports = function( layer_node, options ) {
 
 
   var style = layer_node.style;
+  var ext_style = layer_node.ext_style;
 
   if( !style ){
     return '';
@@ -86,7 +106,13 @@ var attributs_to_css = module.exports = function( layer_node, options ) {
 
   var rets  = [];
   options = _.extend({
-    unit_type : 'px'
+    unit_type : 'px',
+    relative_to_bbox : {
+      left : 0,
+      right : 0,
+      top : 0,
+      bottom : 0
+    }
   }, options);
 
   var origin_style_keys = Object.keys(style);
@@ -117,8 +143,9 @@ var attributs_to_css = module.exports = function( layer_node, options ) {
         rets.push( key + ':' + normalize_value( style[key], options) );
       }
     });
-
-    rets.push( 'position:absolute;' );
+    if( !layer_node.is_group ){
+      rets.push( 'position:absolute;' );
+    }
 
     var effects = _.extend({
       'align-horizontal' : 'left',
@@ -137,15 +164,18 @@ var attributs_to_css = module.exports = function( layer_node, options ) {
       rets.push( 'background-size: contain' );
     }
 
+    var relative_to_bbox = options.relative_to_bbox;
+    debug( 'relative_to_bbox', relative_to_bbox);
+
     switch( effects['align-horizontal'] ){
       case 'left' :
         if( pos_style['left'] ){
-          rets.push( 'left: ' + normalize_value(pos_style['left'], options) );
+          rets.push( 'left: ' + normalize_value(pos_style['left'] - relative_to_bbox.left, options) );
         }
         break;
       case 'right' :
         if( pos_style['right'] ){
-          rets.push( 'right: ' + normalize_value(pos_style['right'], options) );
+          rets.push( 'right: ' + normalize_value(pos_style['right'] - relative_to_bbox.right, options) );
         }
         break;
       case 'center' :
@@ -159,12 +189,12 @@ var attributs_to_css = module.exports = function( layer_node, options ) {
     switch( effects['align-vertical'] ){
       case 'top' :
         if( pos_style['top'] ){
-          rets.push( 'top: ' + normalize_value(pos_style['top'], options) );
+          rets.push( 'top: ' + normalize_value(pos_style['top'] - relative_to_bbox.top, options) );
         }
         break;
       case 'bottom' :
         if( pos_style['bottom'] ){
-          rets.push( 'bottom: ' + normalize_value(pos_style['bottom'], options) );
+          rets.push( 'bottom: ' + normalize_value(pos_style['bottom'] - relative_to_bbox.bottom, options) );
         }
         break;
       case 'center' :
@@ -173,6 +203,16 @@ var attributs_to_css = module.exports = function( layer_node, options ) {
         rets.push( 'top: 0');
         rets.push( 'bottom: 0');
         break;
+    }
+
+    if( !options.preview && ext_style.transform ){
+      var transform = ext_style.transform
+      rets.push('transform: matrix(' 
+                  + [ 'xx', 'xy','yx', 'yy','tx', 'ty']
+                      .map(function( k ) {
+                          return transform[k]
+                      }).join(',') 
+                  + ')');
     }
   }
 
