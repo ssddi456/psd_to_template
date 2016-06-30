@@ -27,7 +27,7 @@ var html_generators = {
       return code;
     } else {
       return get_indents(indent) + '<div class="' + node.class_name.slice(1) + '">' 
-              + (node.text || '') + '</div>';
+              + ( node.text ? ('<span>' + node.text + '</span>')  : '') + '</div>';
     }
   },
   'jade' : function( node, indent, conf ) {

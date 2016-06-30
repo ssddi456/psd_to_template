@@ -12,7 +12,16 @@
     "express": "~4.12.0",
     "jade": "~1.9.2",
     "morgan": "~1.5.1",
-    "serve-favicon": "~2.2.0"
+    "serve-favicon": "~2.2.0",
+
+    "async" : "~0.9.0",
+    "fis-kernel" : "~2.0.19",
+    "fs-extra" : "~0.30.0",
+    "livereload-server" : "~0.2.3",
+    "nedb" : "~1.8.0",
+    "underscore" : "~1.8.3",
+    "watchr" : "~2.4.13",
+    "ws" : "~1.1.1",
   },
   "main": "app.js"
 }

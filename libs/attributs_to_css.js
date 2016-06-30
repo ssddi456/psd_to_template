@@ -86,6 +86,12 @@ function create_css_frame( node, upper_lv, conf ) {
   rets.push( attributs_to_css(node, conf) );
   rets.push( '}' );
 
+  if( node.text ){
+    rets.push( cur_name + ' span');
+    rets.push( '{' );
+    rets.push( 'vertical-align: -webkit-baseline-middle;' );
+    rets.push( '}' );
+  }
 
   node.nodes && node.nodes.slice().reverse().forEach(function( node ) {
     rets.push( create_css_frame( node, cur_name, conf ) );
@@ -116,7 +122,11 @@ var attributs_to_css = module.exports = function( layer_node, options ) {
   }, options);
 
   var origin_style_keys = Object.keys(style);
-  var plain_styles = _.difference(origin_style_keys, position_keys.concat(size_keys));
+
+  var plain_styles = _.difference(origin_style_keys,
+                      position_keys
+                        .concat(size_keys)
+                        .concat(text_keys));
 
   plain_styles.forEach(function( key ) {
     var value = style[key];
@@ -137,6 +147,9 @@ var attributs_to_css = module.exports = function( layer_node, options ) {
   });
 
   if( options.html_type != 'svg' ){
+    if( layer_node.text ){
+      rets.push( 'line-height: 0;' );
+    }
 
     size_keys.forEach(function( key ) {
       if( key in style ){
