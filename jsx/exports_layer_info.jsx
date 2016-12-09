@@ -13,7 +13,7 @@
 #include './ui_util.js'
 
 // debug level: 0-2 (0:disable, 1:break on error, 2:break at beginning)
-// $.level = 1;
+$.level = 1;
 // launch debugger on next line
 // debugger; 
 
@@ -73,6 +73,7 @@ function get_layer_styles ( progress ) {
 
     progress.increase();
 
+
     if( is_group ){
       if( !layer.visible ){
         return false;
@@ -84,7 +85,9 @@ function get_layer_styles ( progress ) {
 
     } else {
       if( layer.visible ){
-        layer.visible = false; 
+
+        layer_node.visible = layer.visible;
+
         layer_node.layer = layer;
 
         layers.push( layer_node );
@@ -94,7 +97,6 @@ function get_layer_styles ( progress ) {
 
         layer_node.src = (exportInfo.destination + '/sources/' + item_path  + '.png')
                             .replace(/ /g,'-');
-
         layer_attr_to_style( layer, layer_node, item_path );
       }
     }
@@ -278,6 +280,14 @@ function do_exports () {
 
   var progress = ui_progress( n + 1 );
   progress.stat('收集样式 - 阶段2/3');
+
+  // 
+  // try fix ps cc's layer bug
+  // 
+  for(var i = 0; i < n; i++){
+    layer = layers[i];
+    layer.layer.visible = false;
+  }
 
   for(var i = 0; i < n; i++){
     layer = layers[i];

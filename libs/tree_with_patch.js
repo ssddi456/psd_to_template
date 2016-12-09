@@ -18,6 +18,7 @@ var tree_with_patch = module.exports = function( source_data_path ) {
 
   var origin_data = null;
   var patched_data = null;
+  var patches;
 
   var emitter = new events();
 
@@ -41,7 +42,7 @@ var tree_with_patch = module.exports = function( source_data_path ) {
        origin_data = JSON.parse(datas[0] || '{}');
        patched_data  = JSON.parse(datas[0] || '{}');
 
-       var patches = datas[1] || [];
+       patches = datas[1] || [];
 
        tree_patcher.apply_patch( patched_data, patches );
 
@@ -104,7 +105,8 @@ var tree_with_patch = module.exports = function( source_data_path ) {
         }
 
         var diff_patcher = tree_patcher(origin_data, updated_source);
-        var patches = tree_patcher.merge_patch(patches, diff_patcher);
+        patches = tree_patcher.merge_patch(patches, diff_patcher);
+
         origin_data = updated_source;
         fsExtra.writeJSON( patch_data_path, patches, done );
 
